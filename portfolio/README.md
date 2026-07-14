@@ -1,3 +1,5 @@
+
+
 # Forno — Premium Personal Portfolio Template
 
 A warm, editorial, Italian-inspired portfolio template. All structure, layout, animation,
@@ -18,13 +20,27 @@ portfolio/
 └── assets/            Drop your images here
 ```
 
-## Design tokens
+## Design tokens — an illuminated codex
 
-- **Colors**: cream `#FAF3E6`, terracotta `#C8633C`, Mediterranean orange `#E59257`,
-  olive `#6E7A4A`, deep blue `#1F394C`, gold `#C9A24B`.
-- **Type**: Fraunces (display/serif), Sora (body), Space Mono (labels & captions).
-- **Signature element**: the soft painterly hero blobs + dashed "upload here" media
-  placeholders that double as an elegant empty state until you add real photography.
+The site is treated as a painted manuscript, not a website. The colour system is
+the historical **pigment cabinet of Europe**, orchestrated so each plate/entry takes
+its own pigment as you scroll (rather than one flat accent):
+
+- **Grounds**: aged vellum `#E7E3D6` (paper), fresco intonaco `#ECE3CB` (warm plate),
+  Prussian night `#0B1622` + Spanish tenebrist brown `#211812` (dark plates),
+  iron-gall `#171712` (ink).
+- **Pigments**: oltremare/lapis `#1F3A93` (IT), Klein/Sèvres blue `#0E2FA0` (FR),
+  cinnabar vermilion `#C6362B` (RU/IT), cochineal carmín `#97243F` (ES),
+  malachite `#1E6B57` (RU), Spanish ochre `#B27A28` + Naples yellow `#E0BE6B`,
+  Pompadour rose `#C08497` (FR), imperial purple `#5C2A50`, burnished gold
+  `#A6853B` / `#D6B45E`.
+- **Type**: Bodoni Moda (display, optical sizing), EB Garamond (body/text serif),
+  Marcellus (lapidary capitals — labels, nav, buttons), Fragment Mono (archival metadata).
+- **Signature elements**: painted illumination bloom (conic-gradient rose-window) in
+  the hero, fresco-plaster and marbled-endpaper textures (SVG turbulence), gilded top
+  edge (tranche dorée) + Scotch rules, gold-tooled rectangular buttons, illuminated
+  lapis versal (drop-cap on a gold shadow), and per-section pigment cycling on folio
+  numbers, essay numbers, index leaves, and rule accents.
 
 ## Founder-credibility components (new)
 

@@ -1,32 +1,56 @@
 /* =========================================================================
-   SHANMUKH SRIRAM — a digital publication
-   Design language: European editorial / museum catalogue.
-   Paper, ink, hairlines, one terracotta accent. Typography first.
+   SHANMUKH SRIRAM — an illuminated codex
+   Not a website: a painted manuscript. The page is the panel.
+   Pigment cabinet of Europe — Italian oltremare, French bleu & rose,
+   Spanish carmín & ochre, Russian cinnabar, malachite, imperial gold.
+   Colours are orchestrated, not scattered: each plate takes its own pigment.
    ========================================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Archivo:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Spline+Sans+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Fragment+Mono:ital@0;1&family=Marcellus&display=swap');
 
 :root{
-  /* ---- Palette --------------------------------------------------------- */
-  --paper:      #F5F1E8;
-  --paper-deep: #EDE7D9;
-  --night:      #171410;
-  --night-soft: #211D17;
-  --ink:        #1D1912;
-  --ink-soft:   #57503F;
-  --ink-faint:  #837B66;
-  --cream:      #F5F1E8;
-  --cream-soft: #C9C2AF;
-  --accent:     #A84322;
-  --accent-ink: #8C3419;
-  --line:       rgba(29,25,18,.16);
-  --line-soft:  rgba(29,25,18,.09);
-  --line-cream: rgba(245,241,232,.18);
+  /* ---- Ground — eau-de-nil daylight (rare celadon; no beige/grey/white) */
+  --paper:      #CFE6DD;   /* eau-de-nil — antique Sèvres celadon ground   */
+  --paper-deep: #BEDBD0;   /* a deeper wash of the same celadon            */
+  --plaster:    #C6E1D7;   /* celadon panel (former beige fresco, retired) */
+  --night:      #10264A;   /* rich lapis-blue illuminated plate (accent)   */
+  --night-soft: #17356A;
+  --bistre:     #0F1E3E;
+
+  --ink:        #16231E;   /* deep viridian-black — the writing            */
+  --ink-soft:   #3A4B44;
+  --ink-faint:  #67766E;
+  --cream:      #F3EEDF;
+  --cream-soft: #BAC6BE;
+
+  /* ---- The pigment cabinet — saturated, for glass on celadon --------- */
+  --lapis:      #1F3A93;   /* IT · oltremare, ground lapis lazuli          */
+  --lapis-ink:  #1A2F74;
+  --klein:      #0E2FA0;   /* FR · Klein / Sèvres blue                     */
+  --vermilion:  #C6362B;   /* RU/IT · cinnabar                             */
+  --carmine:    #97243F;   /* ES · cochineal carmín                        */
+  --malachite:  #1E6B57;   /* RU · malachite green                         */
+  --verdigris:  #4E6B5D;   /* weathered bronze                             */
+  --ochre:      #B27A28;   /* ES · Spanish ochre                           */
+  --naples:     #E0BE6B;   /* IT · Naples yellow                           */
+  --rose:       #BE6E86;   /* FR · Pompadour rose                          */
+  --tyrian:     #5C2A50;   /* imperial purple                              */
+  --gold:       #9C7C2E;   /* or bruni — burnished gold leaf on light      */
+  --gold-bright:#D6B45E;   /* gold catching lamplight, on the plates       */
+
+  --accent:     var(--lapis);
+  --accent-ink: var(--lapis-ink);
+
+  --line:       rgba(20,34,29,.18);
+  --line-soft:  rgba(20,34,29,.10);
+  --line-gold:  rgba(156,124,46,.5);
+  --line-cream: rgba(243,238,223,.20);
 
   /* ---- Type ------------------------------------------------------------ */
-  --f-serif: 'Fraunces', 'Georgia', serif;
-  --f-sans:  'Archivo', 'Helvetica Neue', sans-serif;
-  --f-mono:  'Spline Sans Mono', 'Courier New', monospace;
+  --f-display:'Bodoni Moda', 'Didot', 'Georgia', serif;
+  --f-serif:  'EB Garamond', 'Garamond', 'Georgia', serif;
+  --f-caps:   'Marcellus', 'Trajan Pro', serif;
+  --f-mono:   'Fragment Mono', 'Courier New', monospace;
 
   /* ---- Rhythm ---------------------------------------------------------- */
   --wrap: 1200px;
@@ -39,76 +63,164 @@
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
 html{ scroll-behavior:smooth; }
 body{
-  background:var(--paper);
   color:var(--ink);
-  font-family:var(--f-sans);
+  font-family:var(--f-serif);
   font-weight:400;
-  font-size:17px;
-  line-height:1.7;
+  font-size:19px;
+  line-height:1.62;
+  font-variant-numeric:oldstyle-nums;
+  font-variant-ligatures:common-ligatures contextual;
+  font-synthesis:none;
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
   animation:page-in .8s var(--ease) both;
+  /* The painted vellum ground: faint pigment washes bled into the paper,
+     the way watercolour blooms and settles at the tide-lines. */
+  background:
+    radial-gradient(135% 115% at 6% -12%, rgba(31,58,147,.10), transparent 48%),
+    radial-gradient(120% 120% at 104% 4%, rgba(198,54,43,.09), transparent 46%),
+    radial-gradient(130% 130% at 96% 112%, rgba(30,107,87,.12), transparent 52%),
+    radial-gradient(120% 120% at -8% 108%, rgba(190,110,134,.10), transparent 48%),
+    var(--paper);
+  background-attachment:fixed;
 }
 body.is-leaving{ animation:page-out .35s ease both; }
 @keyframes page-in { from{ opacity:0; } to{ opacity:1; } }
 @keyframes page-out{ from{ opacity:1; } to{ opacity:0; } }
 
+/* Two layers of tooth: fine paper grain + a broader marbled swirl. */
+body::before{
+  content:''; position:fixed; inset:0; z-index:500; pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");
+  opacity:.05; mix-blend-mode:multiply;
+}
+/* Tranche dorée — the gilded edge of the closed volume, along the top. */
+body::after{
+  content:''; position:fixed; top:0; left:0; right:0; height:3px; z-index:600;
+  pointer-events:none;
+  background:linear-gradient(90deg,
+    #7E5F27 0%, #D9BA6C 14%, #A6853B 32%, #EBD089 50%,
+    #916E2A 68%, #CDA85B 86%, #7E5F27 100%);
+}
+
 img{ max-width:100%; display:block; }
 a{ color:inherit; text-decoration:none; }
 ul{ list-style:none; }
-::selection{ background:var(--accent); color:var(--cream); }
+::selection{ background:var(--lapis); color:#F3EEDF; }
 
-.wrap{ max-width:var(--wrap); margin:0 auto; padding:0 var(--gutter); }
+.wrap{ max-width:var(--wrap); margin:0 auto; padding:0 var(--gutter); position:relative; }
 
 /* =========================================================================
    TYPOGRAPHY
    ========================================================================= */
 h1,h2,h3{
-  font-family:var(--f-serif);
+  font-family:var(--f-display);
   font-weight:400;
   line-height:1.06;
-  letter-spacing:-0.015em;
+  letter-spacing:.002em;
+  font-variant-numeric:lining-nums;
+  text-wrap:balance;
+  text-shadow:0 0 .8px rgba(23,23,18,.22);
 }
 h1{ font-size:clamp(2.9rem, 7.2vw, 6rem); }
 h2{ font-size:clamp(2rem, 4.4vw, 3.4rem); line-height:1.1; }
-h3{ font-size:clamp(1.5rem, 2.6vw, 2.1rem); line-height:1.2; }
-h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
+h3{ font-size:clamp(1.5rem, 2.6vw, 2.1rem); line-height:1.2; font-weight:500; }
+h1 em, h2 em, h3 em{ font-style:italic; font-weight:400; color:var(--lapis); }
+
+p{ text-wrap:pretty; }
+@supports (hanging-punctuation: first){
+  body{ hanging-punctuation:first allow-end; }
+}
+
+.hero h1, .page-header h1{ animation:typeset 1.4s var(--ease) .15s both; }
+@keyframes typeset{
+  from{ font-variation-settings:'opsz' 6; opacity:0; }
+  to{ font-variation-settings:'opsz' 96; opacity:1; }
+}
 
 .lede{
-  font-size:clamp(1.05rem, 1.6vw, 1.25rem);
-  line-height:1.75;
+  font-size:clamp(1.12rem, 1.7vw, 1.32rem);
+  line-height:1.72;
   color:var(--ink-soft);
   max-width:62ch;
 }
 
-/* Small-caps editorial label with rule */
+/* Lapidary label — carved capitals, a gilt rule, a pigment tick. */
 .label{
   display:flex; align-items:center; gap:14px;
-  font-family:var(--f-mono);
-  font-size:.68rem;
-  letter-spacing:.22em;
+  font-family:var(--f-caps);
+  font-size:.74rem;
+  letter-spacing:.28em;
   text-transform:uppercase;
   color:var(--ink-faint);
   margin-bottom:26px;
 }
-.label::before{ content:''; width:34px; height:1px; background:var(--accent); flex:none; }
-.label .num{ color:var(--accent); }
-
-.section{ padding:var(--sect) 0; }
-.section--line{ border-top:1px solid var(--line); }
-.section--deep{ background:var(--paper-deep); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
-
-/* Dark editorial plate */
-.plate{
-  background:var(--night);
-  color:var(--cream);
+.label::before{
+  content:''; width:34px; height:2px; flex:none;
+  background:linear-gradient(90deg, var(--gold), var(--gold-bright));
 }
+.label .num{ color:var(--lapis); }
+
+.section{ padding:var(--sect) 0; position:relative; }
+.section--line{ border-top:1px solid var(--line); }
+
+/* A painted fresco plate — warm plaster, pigment blooms sunk into the wall. */
+.section--deep{
+  --page-tone:var(--plaster);
+  position:relative;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(90% 80% at 12% -8%, rgba(30,107,87,.16), transparent 55%),
+    radial-gradient(80% 90% at 100% 40%, rgba(190,110,134,.16), transparent 58%),
+    radial-gradient(120% 90% at 60% 120%, rgba(31,58,147,.12), transparent 60%),
+    linear-gradient(160deg, #C6E1D7, #B7D5CA);
+}
+.section--deep::before{
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.012 0.016' numOctaves='4' seed='11' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.35 0 0 0 0 0.28 0 0 0 0 0.16 0 0 0 0.5 -0.18'/></filter><rect width='600' height='600' filter='url(%23f)'/></svg>");
+  background-size:600px 600px; opacity:.10; mix-blend-mode:multiply;
+}
+.section--deep > .wrap{ position:relative; z-index:1; }
+
+/* The dark illuminated plate — lapis night, imperial gold halo, silk moiré. */
+.plate{
+  position:relative;
+  color:var(--cream);
+  background:
+    radial-gradient(90% 70% at 86% -14%, rgba(214,180,94,.20), transparent 52%),
+    radial-gradient(85% 120% at -6% 108%, rgba(46,74,180,.5), transparent 60%),
+    radial-gradient(70% 90% at 108% 118%, rgba(151,36,63,.32), transparent 58%),
+    linear-gradient(160deg, #12264A 0%, #1E4488 50%, #0F1E3E 100%);
+}
+.plate::before{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='700' height='700'><filter id='m'><feTurbulence type='turbulence' baseFrequency='0.004 0.010' numOctaves='3' seed='7' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.84 0 0 0 0 0.70 0 0 0 0 0.37 0 0 0 0.8 -0.3'/></filter><rect width='700' height='700' filter='url(%23m)'/></svg>");
+  background-size:700px 700px; opacity:.09; mix-blend-mode:screen;
+}
+/* gilt fillet framing the plate, as tooled on a binding */
+.plate::after{
+  content:''; position:absolute; inset:clamp(14px,2.4vw,30px); pointer-events:none;
+  border:1px solid var(--line-cream);
+  box-shadow:inset 0 0 0 1px rgba(214,180,94,.10);
+}
+.plate > .wrap{ position:relative; z-index:1; }
 .plate .label{ color:var(--cream-soft); }
+.plate .label::before{ background:linear-gradient(90deg, var(--gold-bright), #F0D791); }
+.plate .label .num{ color:var(--gold-bright); }
 .plate .lede{ color:var(--cream-soft); }
-.plate h1 em,.plate h2 em{ color:#D4693F; }
+.plate h1 em,.plate h2 em{ color:var(--gold-bright); }
 
 .section-head{ max-width:840px; margin-bottom:clamp(48px, 7vw, 84px); }
 .section-head h2{ margin-bottom:22px; }
+/* an illuminated fleuron closing the section title */
+.section-head h2::after{
+  content:'❧'; display:inline-block; margin-left:.35em;
+  font-family:var(--f-serif); font-style:italic;
+  font-size:.62em; color:var(--gold); transform:translateY(-.05em);
+  opacity:.85;
+}
+.plate .section-head h2::after{ color:var(--gold-bright); }
 
 /* =========================================================================
    NAVIGATION
@@ -124,33 +236,43 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
 }
 .site-nav.is-scrolled{
   padding:14px 0;
-  background:rgba(245,241,232,.92);
-  backdrop-filter:blur(14px);
-  box-shadow:0 1px 0 var(--line);
+  background:rgba(207,230,221,.90);
+  backdrop-filter:blur(14px) saturate(1.1);
+  box-shadow:0 1px 0 var(--line-gold);
 }
 .plate-page .site-nav:not(.is-scrolled){ color:var(--cream); }
 
 .logo{
-  font-family:var(--f-serif);
-  font-size:1.22rem;
-  letter-spacing:-.01em;
+  font-family:var(--f-display);
+  font-size:1.24rem;
+  letter-spacing:.005em;
   white-space:nowrap;
 }
 .logo .dot{
-  display:inline-block; width:7px; height:7px; border-radius:50%;
-  background:var(--accent); margin-right:10px; transform:translateY(-2px);
+  display:inline-block; width:8px; height:8px; margin-right:11px;
+  background:linear-gradient(135deg, var(--gold-bright), var(--gold));
+  transform:rotate(45deg) translateY(-2px);
+  box-shadow:0 0 0 1px rgba(166,133,59,.35);
 }
 .nav-links{ display:flex; gap:clamp(18px, 3vw, 40px); }
 .nav-links a{
-  font-family:var(--f-mono);
-  font-size:.7rem; letter-spacing:.18em; text-transform:uppercase;
-  color:inherit; opacity:.72;
+  font-family:var(--f-caps);
+  font-size:.74rem; letter-spacing:.2em; text-transform:uppercase;
+  color:inherit; opacity:.74;
   padding-bottom:4px;
   border-bottom:1px solid transparent;
   transition:opacity .3s, border-color .3s;
 }
 .nav-links a:hover{ opacity:1; }
-.nav-links a.is-active{ opacity:1; border-color:var(--accent); }
+.nav-links a.is-active{ opacity:1; border-color:var(--gold); }
+
+.nav-links{ counter-reset:chapter; }
+.nav-links li{ counter-increment:chapter; }
+.nav-links a::before{
+  content:counter(chapter, lower-roman) ".\00a0";
+  color:var(--lapis); opacity:.85;
+}
+.nav-links li:last-child a::before{ content:'\2020\00a0'; color:var(--carmine); }
 
 .nav-burger{
   display:none;
@@ -163,28 +285,39 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
 }
 .nav-burger::before{ top:3px; } .nav-burger span{ top:11px; } .nav-burger::after{ top:19px; }
 
-/* Mobile menu — full-bleed ink plate */
 .mobile-menu{
   position:fixed; inset:0; z-index:200;
-  background:var(--night); color:var(--cream);
+  color:var(--cream);
+  background:
+    radial-gradient(80% 60% at 85% -10%, rgba(214,180,94,.16), transparent 55%),
+    radial-gradient(90% 120% at -5% 110%, rgba(31,58,147,.5), transparent 60%),
+    linear-gradient(160deg, var(--night), var(--bistre));
   display:flex; flex-direction:column; justify-content:center;
   padding:0 var(--gutter);
   opacity:0; visibility:hidden;
   transition:opacity .45s var(--ease), visibility .45s;
 }
 .mobile-menu.is-open{ opacity:1; visibility:visible; }
+.mobile-menu{ counter-reset:chapter; }
 .mobile-menu a{
-  font-family:var(--f-serif);
+  font-family:var(--f-display);
   font-size:clamp(2rem, 8vw, 3.2rem);
   padding:12px 0;
   border-bottom:1px solid var(--line-cream);
-  display:flex; justify-content:space-between; align-items:baseline;
+  display:flex; justify-content:flex-start; align-items:baseline;
+  counter-increment:chapter;
   transition:padding-left .35s var(--ease), color .35s;
 }
-.mobile-menu a::after{
-  content:'→'; font-size:1.2rem; opacity:0; transition:opacity .3s;
+.mobile-menu a::before{
+  content:counter(chapter, lower-roman);
+  font-family:var(--f-mono); font-size:.85rem; letter-spacing:.1em;
+  color:var(--gold-bright); margin-right:22px; min-width:1.6em;
 }
-.mobile-menu a:hover{ padding-left:14px; color:#D4693F; }
+.mobile-menu a:last-of-type::before{ content:'\2020'; }
+.mobile-menu a::after{
+  content:'→'; font-size:1.2rem; opacity:0; margin-left:auto; transition:opacity .3s;
+}
+.mobile-menu a:hover{ padding-left:14px; color:var(--gold-bright); }
 .mobile-menu a:hover::after{ opacity:1; }
 .mobile-menu-close{
   position:absolute; top:26px; right:var(--gutter);
@@ -195,43 +328,59 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
 .mobile-menu-close:hover{ background:var(--cream); color:var(--night); }
 
 /* =========================================================================
-   BUTTONS / LINKS
+   BUTTONS / LINKS — gold-tooled labels on a binding
    ========================================================================= */
 .btn{
+  position:relative;
   display:inline-flex; align-items:center; gap:10px;
-  font-family:var(--f-mono);
-  font-size:.72rem; letter-spacing:.16em; text-transform:uppercase;
-  padding:16px 28px;
+  font-family:var(--f-caps);
+  font-size:.76rem; letter-spacing:.22em; text-transform:uppercase;
+  padding:16px 30px;
   border:1px solid var(--ink);
-  border-radius:100px;
+  border-radius:0;
   transition:background .35s var(--ease), color .35s var(--ease), border-color .35s;
   cursor:pointer;
 }
+.btn::after{
+  content:''; position:absolute; inset:3px;
+  border:1px solid currentColor; opacity:.32; pointer-events:none;
+  transition:opacity .35s;
+}
 .btn:hover{ background:var(--ink); color:var(--cream); }
-.btn-solid{ background:var(--ink); color:var(--cream); }
-.btn-solid:hover{ background:var(--accent); border-color:var(--accent); }
+.btn-solid{
+  color:var(--cream); border-color:var(--lapis-ink);
+  background:linear-gradient(160deg, var(--lapis), var(--lapis-ink));
+}
+.btn-solid::after{ border-color:var(--gold-bright); opacity:.5; }
+.btn-solid:hover{ background:linear-gradient(160deg, var(--klein), var(--lapis)); }
 .plate .btn{ border-color:var(--cream-soft); color:var(--cream); }
 .plate .btn:hover{ background:var(--cream); color:var(--night); }
-.plate .btn-solid{ background:var(--cream); color:var(--night); border-color:var(--cream); }
-.plate .btn-solid:hover{ background:#D4693F; border-color:#D4693F; color:var(--cream); }
-
-/* Inline editorial link */
-.tlink{
-  font-family:var(--f-mono);
-  font-size:.72rem; letter-spacing:.16em; text-transform:uppercase;
-  color:var(--accent-ink);
-  border-bottom:1px solid currentColor;
-  padding-bottom:3px;
-  transition:color .3s;
+.plate .btn-solid{
+  color:var(--night); border-color:var(--gold-bright);
+  background:linear-gradient(160deg, #F0D791, var(--gold-bright));
 }
-.tlink:hover{ color:var(--ink); }
-.plate .tlink{ color:#D4693F; }
+.plate .btn-solid::after{ border-color:rgba(11,22,34,.4); }
+.plate .btn-solid:hover{ background:var(--cream); }
+
+.tlink{
+  font-family:var(--f-caps);
+  font-size:.76rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--lapis-ink);
+  padding-bottom:3px;
+  background-image:linear-gradient(currentColor, currentColor), linear-gradient(var(--gold), var(--gold));
+  background-repeat:no-repeat;
+  background-size:100% 1px, 0% 2px;
+  background-position:100% 100%, 0 100%;
+  transition:color .3s, background-size .55s var(--ease);
+}
+.tlink:hover{ background-size:0% 1px, 100% 2px; color:var(--vermilion); }
+.plate .tlink{ color:var(--gold-bright); }
 .plate .tlink:hover{ color:var(--cream); }
 
 .cta-row{ display:flex; flex-wrap:wrap; gap:16px; align-items:center; }
 
 /* =========================================================================
-   HERO
+   HERO — the frontispiece, with a painted illumination
    ========================================================================= */
 .hero{
   min-height:100svh;
@@ -241,17 +390,19 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   overflow:hidden;
 }
 .hero-kicker{
-  font-family:var(--f-mono);
-  font-size:.7rem; letter-spacing:.24em; text-transform:uppercase;
+  font-family:var(--f-caps);
+  font-size:.74rem; letter-spacing:.26em; text-transform:uppercase;
   color:var(--ink-faint);
   display:flex; align-items:center; gap:12px;
   margin-bottom:34px;
 }
 .hero-kicker .pulse{
-  width:7px; height:7px; border-radius:50%; background:var(--accent); flex:none;
+  width:8px; height:8px; flex:none;
+  background:linear-gradient(135deg, var(--vermilion), var(--carmine));
+  transform:rotate(45deg);
   animation:pulse 2.4s infinite;
 }
-@keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(168,67,34,.4);} 50%{ box-shadow:0 0 0 8px rgba(168,67,34,0);} }
+@keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(198,54,43,.4);} 50%{ box-shadow:0 0 0 8px rgba(198,54,43,0);} }
 
 .hero h1{ max-width:14ch; margin-bottom:40px; }
 .hero .lede{ margin-bottom:16px; }
@@ -263,14 +414,14 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   align-items:end;
 }
 .hero-aside{
-  border-left:1px solid var(--line);
+  border-left:2px solid var(--line-gold);
   padding-left:clamp(20px, 3vw, 40px);
-  font-size:.95rem;
+  font-size:1rem;
   color:var(--ink-soft);
 }
 .hero-aside .now-label{
-  font-family:var(--f-mono); font-size:.66rem; letter-spacing:.22em;
-  text-transform:uppercase; color:var(--accent-ink);
+  font-family:var(--f-caps); font-size:.7rem; letter-spacing:.26em;
+  text-transform:uppercase; color:var(--malachite);
   display:block; margin-bottom:12px;
 }
 .hero .cta-row{ margin-top:52px; }
@@ -280,66 +431,108 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   padding-top:22px;
   border-top:1px solid var(--line);
   display:flex; justify-content:space-between; align-items:center;
-  font-family:var(--f-mono); font-size:.66rem;
+  font-family:var(--f-mono); font-size:.64rem;
   letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
 }
+
+/* The illumination — a spilled palette / rose-window, blurred into the paper. */
 .hero-orn{
   position:absolute; z-index:-1;
-  top:12%; right:-140px;
-  width:clamp(320px, 42vw, 620px); aspect-ratio:1;
-  border:1px solid var(--line);
-  border-radius:50%;
+  top:4%; right:-160px;
+  width:clamp(360px, 46vw, 720px); aspect-ratio:1; border-radius:50%;
+  background:conic-gradient(from 25deg,
+    rgba(31,58,147,.55), rgba(151,36,63,.42), rgba(30,107,87,.48),
+    rgba(178,122,40,.5), rgba(92,42,80,.4), rgba(198,54,43,.44),
+    rgba(14,47,160,.5), rgba(31,58,147,.55));
+  filter:blur(64px) saturate(1.12);
+  opacity:.52;
 }
+/* a crisp gilt ring and a pigment bead laid over the bloom */
 .hero-orn::before{
-  content:''; position:absolute; inset:14%;
-  border:1px solid var(--line-soft); border-radius:50%;
+  content:''; position:absolute; inset:8%;
+  border:1px solid var(--line-gold); border-radius:50%;
+  box-shadow:inset 0 0 0 1px rgba(166,133,59,.14);
 }
 .hero-orn::after{
-  content:''; position:absolute; top:50%; left:-4px;
-  width:9px; height:9px; border-radius:50%; background:var(--accent);
+  content:''; position:absolute; top:50%; left:2%;
+  width:10px; height:10px; background:var(--gold);
+  transform:rotate(45deg);
+  box-shadow:0 0 0 1px rgba(166,133,59,.4);
 }
 
-/* Interior page header */
+/* Interior page header — fresco wash behind the title, Scotch rule beneath. */
 .page-header{
   padding:190px 0 clamp(60px, 8vw, 100px);
-  border-bottom:1px solid var(--line);
+  border-bottom:2px solid var(--ink);
   position:relative; overflow:hidden;
+}
+.page-header::before{
+  content:''; position:absolute; z-index:-1;
+  top:-20%; right:-6%; width:52vw; max-width:640px; aspect-ratio:1; border-radius:50%;
+  background:conic-gradient(from 40deg,
+    rgba(31,58,147,.5), rgba(178,122,40,.45), rgba(151,36,63,.4),
+    rgba(30,107,87,.45), rgba(31,58,147,.5));
+  filter:blur(70px); opacity:.4;
+}
+.page-header::after{
+  content:''; position:absolute; left:0; right:0; bottom:5px; height:1px;
+  background:var(--line-gold);
 }
 .page-header h1{ max-width:16ch; }
 .page-header .lede{ margin-top:30px; }
 .crumb{
-  font-family:var(--f-mono); font-size:.66rem;
+  font-family:var(--f-mono); font-size:.64rem;
   letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint);
   margin-bottom:30px;
 }
-.crumb span{ color:var(--accent); margin:0 8px; }
+.crumb span{ color:var(--vermilion); margin:0 8px; }
 
 /* =========================================================================
-   MARQUEE — quiet, hairline-bound
+   CONTENTS — table of contents, gilt Scotch rule, pigment folios
    ========================================================================= */
-.marquee{
-  border-top:1px solid var(--line); border-bottom:1px solid var(--line);
-  overflow:hidden; padding:18px 0;
-  background:var(--paper);
+.contents{
+  position:relative;
+  border-top:2px solid var(--ink);
+  border-bottom:1px solid var(--line);
+  padding:28px 0 32px;
+  background:linear-gradient(180deg, rgba(224,190,107,.10), transparent 60%);
 }
-.marquee-track{
-  display:flex; gap:0; width:max-content;
-  animation:marquee 36s linear infinite;
+.contents::before{
+  content:''; position:absolute; top:3px; left:0; right:0; height:1px;
+  background:var(--line-gold);
 }
-.marquee-track span{
-  font-family:var(--f-serif); font-style:italic; font-weight:300;
-  font-size:1.05rem; color:var(--ink-soft);
-  padding:0 34px; position:relative; white-space:nowrap;
+.contents-label{
+  display:block;
+  font-family:var(--f-caps); font-size:.66rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--ink-faint);
+  margin-bottom:18px;
 }
-.marquee-track span::after{
-  content:''; position:absolute; right:-3px; top:50%;
-  width:5px; height:5px; border-radius:50%; background:var(--accent);
-  transform:translateY(-50%);
+.contents ol{
+  list-style:none;
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+  gap:12px clamp(24px, 3.5vw, 54px);
 }
-@keyframes marquee{ to{ transform:translateX(-50%); } }
+.contents a{ display:flex; align-items:baseline; gap:10px; transition:color .3s; }
+.contents a:hover{ color:var(--lapis-ink); }
+.contents .t{
+  font-family:var(--f-serif); font-style:italic; font-weight:400;
+  font-size:1.06rem; white-space:nowrap;
+}
+.contents .dots{ flex:1; border-bottom:1px dotted rgba(20,34,29,.32); transform:translateY(-4px); }
+.contents .n{ font-family:var(--f-mono); font-size:.62rem; letter-spacing:.12em; }
+/* each entry numbered in its own pigment */
+.contents li:nth-child(7n+1) .n{ color:var(--lapis); }
+.contents li:nth-child(7n+2) .n{ color:var(--vermilion); }
+.contents li:nth-child(7n+3) .n{ color:var(--malachite); }
+.contents li:nth-child(7n+4) .n{ color:var(--ochre); }
+.contents li:nth-child(7n+5) .n{ color:var(--carmine); }
+.contents li:nth-child(7n+6) .n{ color:var(--tyrian); }
+.contents li:nth-child(7n+7) .n{ color:var(--klein); }
+[id]{ scroll-margin-top:80px; }
 
 /* =========================================================================
-   INDEX STRIP — impact statements as a catalogue index
+   INDEX STRIP — catalogue index, each leaf a different pigment
    ========================================================================= */
 .index-strip{
   display:grid; grid-template-columns:repeat(4, 1fr);
@@ -348,37 +541,51 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
 .index-item{
   border-right:1px solid var(--line);
   padding:8px clamp(18px, 2.4vw, 34px) 30px;
+  position:relative;
 }
+.index-item::before{
+  content:''; position:absolute; top:0; left:-1px; width:34px; height:2px;
+}
+.index-item:nth-child(1)::before{ background:var(--lapis); }
+.index-item:nth-child(2)::before{ background:var(--vermilion); }
+.index-item:nth-child(3)::before{ background:var(--malachite); }
+.index-item:nth-child(4)::before{ background:var(--ochre); }
 .index-item .roman{
-  font-family:var(--f-serif); font-style:italic; font-weight:300;
-  font-size:1.6rem; color:var(--accent);
-  display:block; margin-bottom:18px;
+  font-family:var(--f-serif); font-style:italic; font-weight:400;
+  font-size:1.7rem; display:block; margin-bottom:18px;
 }
+.index-item:nth-child(1) .roman{ color:var(--lapis); }
+.index-item:nth-child(2) .roman{ color:var(--vermilion); }
+.index-item:nth-child(3) .roman{ color:var(--malachite); }
+.index-item:nth-child(4) .roman{ color:var(--ochre); }
 .index-item h4{
-  font-family:var(--f-sans); font-weight:500; font-size:.98rem;
-  line-height:1.5; margin-bottom:8px;
+  font-family:var(--f-serif); font-weight:600; font-size:1.08rem;
+  line-height:1.45; margin-bottom:8px;
 }
-.index-item p{ font-size:.86rem; color:var(--ink-soft); line-height:1.6; }
+.index-item p{ font-size:.92rem; color:var(--ink-soft); line-height:1.6; }
 
 /* =========================================================================
-   PHILOSOPHY — pull-quote plate
+   PHILOSOPHY — pull-quote on the illuminated plate
    ========================================================================= */
 .philosophy blockquote{
-  font-family:var(--f-serif); font-weight:300;
+  font-family:var(--f-display); font-weight:400;
   font-size:clamp(1.7rem, 3.6vw, 2.9rem);
-  line-height:1.28; letter-spacing:-.01em;
-  max-width:24ch;
+  line-height:1.28; letter-spacing:.002em;
+  max-width:24ch; text-wrap:balance;
 }
-.philosophy blockquote em{ font-style:italic; color:#D4693F; }
+.philosophy blockquote em{ font-style:italic; color:var(--gold-bright); }
 .philosophy .phil-grid{
   display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);
   gap:clamp(40px, 6vw, 90px); align-items:start;
 }
 .philosophy .phil-notes p{
-  color:var(--cream-soft); font-size:.98rem; line-height:1.8;
-  padding-left:22px; border-left:1px solid var(--line-cream);
-  margin-bottom:26px;
+  color:var(--cream-soft); font-size:1.02rem; line-height:1.8;
+  padding-left:22px; margin-bottom:26px;
+  border-left:2px solid;
 }
+.philosophy .phil-notes p:nth-child(1){ border-color:var(--gold-bright); }
+.philosophy .phil-notes p:nth-child(2){ border-color:var(--vermilion); }
+.philosophy .phil-notes p:nth-child(3){ border-color:var(--malachite); }
 .philosophy .phil-notes p:last-child{ margin-bottom:0; }
 
 /* =========================================================================
@@ -394,15 +601,21 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   align-items:baseline;
 }
 .skill-row dt{
-  font-family:var(--f-mono); font-size:.68rem;
-  letter-spacing:.2em; text-transform:uppercase; color:var(--ink-faint);
+  font-family:var(--f-caps); font-size:.72rem;
+  letter-spacing:.24em; text-transform:uppercase; color:var(--ink-faint);
 }
 .skill-row dd{
   font-family:var(--f-serif); font-weight:400;
-  font-size:clamp(1.05rem, 1.8vw, 1.35rem); line-height:1.6;
+  font-size:clamp(1.1rem, 1.8vw, 1.4rem); line-height:1.6;
   color:var(--ink);
 }
-.skill-row dd i{ color:var(--ink-faint); font-style:normal; margin:0 10px; }
+.skill-row:nth-child(6n+1) dt{ color:var(--lapis-ink); }
+.skill-row:nth-child(6n+2) dt{ color:var(--carmine); }
+.skill-row:nth-child(6n+3) dt{ color:var(--malachite); }
+.skill-row:nth-child(6n+4) dt{ color:var(--ochre); }
+.skill-row:nth-child(6n+5) dt{ color:var(--tyrian); }
+.skill-row:nth-child(6n+6) dt{ color:var(--klein); }
+.skill-row dd i{ color:var(--gold); font-style:normal; margin:0 10px; }
 
 /* =========================================================================
    EXPERIENCE / EDUCATION — dossier entries
@@ -415,15 +628,15 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   border-top:1px solid var(--line);
 }
 .dossier-meta{
-  font-family:var(--f-mono); font-size:.7rem;
+  font-family:var(--f-mono); font-size:.68rem;
   letter-spacing:.16em; text-transform:uppercase;
   color:var(--ink-faint); line-height:2.1;
 }
-.dossier-meta .where{ color:var(--accent-ink); }
+.dossier-meta .where{ color:var(--malachite); }
 .dossier-body h3{ margin-bottom:6px; }
 .dossier-body .org{
-  font-family:var(--f-serif); font-style:italic; font-weight:300;
-  font-size:1.1rem; color:var(--ink-soft);
+  font-family:var(--f-serif); font-style:italic; font-weight:400;
+  font-size:1.15rem; color:var(--ink-soft);
   display:block; margin-bottom:24px;
 }
 .notes{ max-width:66ch; }
@@ -431,38 +644,54 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   position:relative;
   padding:12px 0 12px 30px;
   color:var(--ink-soft);
-  font-size:.97rem; line-height:1.7;
+  font-size:1.02rem; line-height:1.7;
   border-bottom:1px solid var(--line-soft);
 }
 .notes li:last-child{ border-bottom:0; }
-.notes li::before{
-  content:'—'; position:absolute; left:0; color:var(--accent);
-}
+.notes li::before{ content:'—'; position:absolute; left:0; color:var(--vermilion); }
 
 /* =========================================================================
-   PROJECTS — catalogue folios
+   PROJECTS — catalogue folios, each plate its own pigment
    ========================================================================= */
 .folio{
   padding:clamp(56px, 8vw, 100px) 0;
   border-top:1px solid var(--line);
+  position:relative;
 }
+.folio::after{
+  content:attr(data-roman);
+  position:absolute; top:clamp(30px, 6vw, 64px); right:0;
+  font-family:var(--f-display); font-style:italic; font-weight:400;
+  font-size:clamp(150px, 20vw, 300px); line-height:.75;
+  color:var(--page-tone, var(--paper));
+  text-shadow:-1px -1px 1px rgba(20,34,29,.18), 1px 1px 1px rgba(255,255,255,.75);
+  pointer-events:none; user-select:none; z-index:-1;
+}
+@media (max-width:960px){ .folio::after{ display:none; } }
 .folio-head{
   display:flex; flex-wrap:wrap; align-items:baseline; gap:18px 34px;
   margin-bottom:14px;
 }
 .folio-no{
-  font-family:var(--f-serif); font-style:italic; font-weight:300;
-  font-size:clamp(2rem, 4vw, 3rem); color:var(--accent);
+  font-family:var(--f-display); font-style:italic; font-weight:400;
+  font-size:clamp(2rem, 4vw, 3rem);
 }
+/* the plate's pigment — folio number, its rule, its stack marker */
+.folio:nth-of-type(6n+1) .folio-no{ color:var(--lapis); }
+.folio:nth-of-type(6n+2) .folio-no{ color:var(--vermilion); }
+.folio:nth-of-type(6n+3) .folio-no{ color:var(--malachite); }
+.folio:nth-of-type(6n+4) .folio-no{ color:var(--ochre); }
+.folio:nth-of-type(6n+5) .folio-no{ color:var(--carmine); }
+.folio:nth-of-type(6n+6) .folio-no{ color:var(--tyrian); }
 .folio h3{ font-size:clamp(1.8rem, 3.4vw, 2.7rem); }
 .folio .folio-sub{
-  font-family:var(--f-serif); font-style:italic; font-weight:300;
-  font-size:clamp(1.05rem, 1.8vw, 1.35rem);
+  font-family:var(--f-serif); font-style:italic; font-weight:400;
+  font-size:clamp(1.1rem, 1.8vw, 1.4rem);
   color:var(--ink-soft);
   margin-bottom:26px; display:block;
 }
 .folio-stack{
-  font-family:var(--f-mono); font-size:.68rem;
+  font-family:var(--f-mono); font-size:.66rem;
   letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint);
   line-height:2.2;
   margin-bottom:34px;
@@ -470,7 +699,12 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   border-bottom:1px solid var(--line-soft);
   max-width:74ch;
 }
-.folio-stack b{ color:var(--accent-ink); font-weight:500; }
+.folio-stack b{ color:var(--lapis-ink); font-weight:500; }
+.folio:nth-of-type(6n+2) .folio-stack b{ color:var(--carmine); }
+.folio:nth-of-type(6n+3) .folio-stack b{ color:var(--malachite); }
+.folio:nth-of-type(6n+4) .folio-stack b{ color:var(--ochre); }
+.folio:nth-of-type(6n+5) .folio-stack b{ color:var(--carmine); }
+.folio:nth-of-type(6n+6) .folio-stack b{ color:var(--tyrian); }
 .folio-grid{
   display:grid;
   grid-template-columns:minmax(0, 1.6fr) minmax(220px, 1fr);
@@ -478,22 +712,23 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   align-items:start;
 }
 .folio-side{
-  border-left:1px solid var(--line);
+  border-left:2px solid var(--line-gold);
   padding-left:clamp(20px, 2.5vw, 36px);
   position:sticky; top:120px;
 }
 .folio-side h5{
-  font-family:var(--f-mono); font-size:.66rem; font-weight:500;
-  letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint);
+  font-family:var(--f-caps); font-size:.7rem; font-weight:400;
+  letter-spacing:.26em; text-transform:uppercase; color:var(--ink-faint);
   margin-bottom:16px;
 }
 .folio-side .side-note{
-  font-size:.88rem; color:var(--ink-soft); line-height:1.7; margin-bottom:26px;
+  font-size:.94rem; color:var(--ink-soft); line-height:1.7; margin-bottom:26px;
+  font-style:italic;
 }
 .folio-links{ display:flex; flex-direction:column; gap:14px; align-items:flex-start; }
 
 /* =========================================================================
-   BLOG — fields of inquiry
+   BLOG — fields of inquiry, each essay its own pigment
    ========================================================================= */
 .essay{
   display:grid;
@@ -504,22 +739,27 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
 }
 .essay:first-of-type{ border-top:0; }
 .essay-no{
-  font-family:var(--f-serif); font-style:italic; font-weight:300;
-  font-size:clamp(1.8rem, 3vw, 2.6rem); color:var(--accent);
-  line-height:1;
+  font-family:var(--f-display); font-style:italic; font-weight:400;
+  font-size:clamp(1.8rem, 3vw, 2.6rem); line-height:1;
 }
+.essay:nth-of-type(6n+1) .essay-no{ color:var(--lapis); }
+.essay:nth-of-type(6n+2) .essay-no{ color:var(--vermilion); }
+.essay:nth-of-type(6n+3) .essay-no{ color:var(--malachite); }
+.essay:nth-of-type(6n+4) .essay-no{ color:var(--tyrian); }
+.essay:nth-of-type(6n+5) .essay-no{ color:var(--ochre); }
+.essay:nth-of-type(6n+6) .essay-no{ color:var(--carmine); }
 .essay-no small{
   display:block; margin-top:14px;
   font-family:var(--f-mono); font-style:normal;
-  font-size:.62rem; letter-spacing:.22em; text-transform:uppercase;
+  font-size:.6rem; letter-spacing:.22em; text-transform:uppercase;
   color:var(--ink-faint);
 }
 .essay-body h3{ margin-bottom:20px; max-width:22ch; }
-.essay-body p{ max-width:64ch; color:var(--ink-soft); line-height:1.85; }
+.essay-body p{ max-width:64ch; color:var(--ink-soft); line-height:1.8; }
 .essay-body p + p{ margin-top:16px; }
 
 /* =========================================================================
-   PROSE — long-form about sections
+   PROSE — long-form, with an illuminated versal
    ========================================================================= */
 .prose{
   display:grid;
@@ -535,22 +775,28 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
 .prose-side h2{ font-size:clamp(1.6rem, 2.8vw, 2.3rem); max-width:12ch; }
 .prose-body{ max-width:68ch; }
 .prose-body p{
-  color:var(--ink-soft); font-size:1.02rem; line-height:1.9;
+  color:var(--ink-soft); font-size:1.08rem; line-height:1.82;
   margin-bottom:22px;
 }
 .prose-body p:last-child{ margin-bottom:0; }
-.prose-body p b{ color:var(--ink); font-weight:500; }
+.prose-body p b{ color:var(--ink); font-weight:600; }
+/* The versal — an illuminated initial, lapis letter on a gold shadow */
 .prose-body .drop::first-letter{
-  font-family:var(--f-serif);
-  font-size:3.4em; line-height:.82;
-  float:left; padding:8px 12px 0 0;
-  color:var(--accent);
+  font-family:var(--f-display); font-style:italic;
+  font-size:3.8em; line-height:.76;
+  float:left; padding:10px 14px 0 0;
+  color:var(--lapis);
+  text-shadow:2px 2px 0 rgba(214,180,94,.5), 3px 3px 0 rgba(166,133,59,.28);
+}
+.prose-body .drop::first-line{ font-variant-caps:small-caps; letter-spacing:.05em; }
+@media (min-width:640px){
+  .prose-body p, .essay-body p{ text-align:justify; -webkit-hyphens:auto; hyphens:auto; }
 }
 .prose-body .pull{
-  font-family:var(--f-serif); font-style:italic; font-weight:300;
-  font-size:clamp(1.3rem, 2.2vw, 1.7rem); line-height:1.45;
+  font-family:var(--f-serif); font-style:italic; font-weight:400;
+  font-size:clamp(1.35rem, 2.2vw, 1.75rem); line-height:1.45;
   color:var(--ink);
-  border-left:2px solid var(--accent);
+  border-left:3px solid var(--gold);
   padding:6px 0 6px 26px;
   margin:34px 0;
 }
@@ -566,43 +812,54 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   align-items:center;
   padding:clamp(26px, 4vw, 40px) 0;
   border-bottom:1px solid var(--line);
-  transition:padding-left .4s var(--ease);
+  transition:padding-left .4s var(--ease), background .4s var(--ease);
 }
-.ledger-row:hover{ padding-left:18px; }
+.ledger-row:hover{ padding-left:18px; background:linear-gradient(90deg, rgba(224,190,107,.14), transparent 70%); }
 .ledger-row .ch{
-  font-family:var(--f-mono); font-size:.68rem;
-  letter-spacing:.22em; text-transform:uppercase; color:var(--ink-faint);
+  font-family:var(--f-caps); font-size:.72rem;
+  letter-spacing:.26em; text-transform:uppercase; color:var(--ink-faint);
 }
 .ledger-row .cv{
   font-family:var(--f-serif); font-weight:400;
-  font-size:clamp(1.1rem, 2.4vw, 1.7rem);
-  letter-spacing:-.01em;
+  font-size:clamp(1.15rem, 2.4vw, 1.75rem);
   overflow-wrap:anywhere;
 }
 .ledger-row .arrow{
-  font-family:var(--f-serif); font-size:1.4rem; color:var(--accent);
+  font-family:var(--f-serif); font-size:1.4rem;
   transition:transform .4s var(--ease);
 }
+.ledger-row:nth-child(4n+1) .arrow{ color:var(--lapis); }
+.ledger-row:nth-child(4n+2) .arrow{ color:var(--vermilion); }
+.ledger-row:nth-child(4n+3) .arrow{ color:var(--malachite); }
+.ledger-row:nth-child(4n+4) .arrow{ color:var(--ochre); }
 .ledger-row:hover .arrow{ transform:translate(6px, -4px); }
 
 /* =========================================================================
-   CLOSING PLATE — invitation
+   CLOSING PLATE
    ========================================================================= */
 .closing{ text-align:left; }
-.closing h2{
-  font-size:clamp(2.2rem, 5.4vw, 4.2rem);
-  max-width:18ch;
-  margin-bottom:30px;
-}
+.closing h2{ font-size:clamp(2.2rem, 5.4vw, 4.2rem); max-width:18ch; margin-bottom:30px; }
 .closing .lede{ margin-bottom:44px; }
 
 /* =========================================================================
-   FOOTER
+   FOOTER — the marbled endpaper of the volume
    ========================================================================= */
 .site-footer{
-  background:var(--night); color:var(--cream);
+  position:relative;
+  color:var(--cream);
+  background:
+    radial-gradient(90% 70% at 50% -24%, rgba(31,58,147,.34), transparent 62%),
+    radial-gradient(70% 90% at 88% 120%, rgba(151,36,63,.28), transparent 60%),
+    radial-gradient(60% 80% at 8% 110%, rgba(30,107,87,.24), transparent 58%),
+    linear-gradient(160deg, var(--night), var(--bistre));
   padding:clamp(70px, 9vw, 110px) 0 36px;
 }
+.site-footer::before{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='700' height='700'><filter id='e'><feTurbulence type='turbulence' baseFrequency='0.006 0.012' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0.84 0 0 0 0 0.70 0 0 0 0 0.37 0 0 0 0.8 -0.32'/></filter><rect width='700' height='700' filter='url(%23e)'/></svg>");
+  background-size:700px 700px; opacity:.08; mix-blend-mode:screen;
+}
+.site-footer .wrap{ position:relative; z-index:1; }
 .footer-top{
   display:grid;
   grid-template-columns:minmax(0, 1.6fr) repeat(3, minmax(120px, 1fr));
@@ -610,29 +867,100 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   padding-bottom:clamp(50px, 7vw, 80px);
   border-bottom:1px solid var(--line-cream);
 }
-.footer-top h3{
-  font-size:clamp(1.7rem, 3vw, 2.5rem);
-  font-weight:300; max-width:16ch; line-height:1.2;
-}
-.footer-top h3 em{ font-style:italic; color:#D4693F; }
+.footer-top h3{ font-size:clamp(1.7rem, 3vw, 2.5rem); font-weight:400; max-width:16ch; line-height:1.2; }
+.footer-top h3 em{ font-style:italic; color:var(--gold-bright); }
 .footer-col h5{
-  font-family:var(--f-mono); font-size:.64rem; font-weight:500;
-  letter-spacing:.24em; text-transform:uppercase;
+  font-family:var(--f-caps); font-size:.68rem; font-weight:400;
+  letter-spacing:.28em; text-transform:uppercase;
   color:var(--cream-soft); margin-bottom:20px;
 }
 .footer-col a{
   display:block; padding:5px 0;
-  font-size:.92rem; color:var(--cream-soft);
+  font-size:.98rem; color:var(--cream-soft);
   transition:color .3s, padding-left .3s var(--ease);
 }
-.footer-col a:hover{ color:var(--cream); padding-left:8px; }
+.footer-col a:hover{ color:var(--gold-bright); padding-left:8px; }
 .footer-bottom{
   display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px;
   padding-top:30px;
-  font-family:var(--f-mono); font-size:.64rem;
+  font-family:var(--f-mono); font-size:.62rem;
   letter-spacing:.18em; text-transform:uppercase;
   color:var(--cream-soft);
 }
+
+/* =========================================================================
+   MARGINALIA
+   ========================================================================= */
+.section-head, .prose, .phil-grid, .folio-grid{ position:relative; }
+.margin-note{
+  display:none;
+  position:absolute; right:calc(100% + clamp(20px, 2vw, 32px)); top:8px;
+  width:130px; text-align:right;
+  font-family:var(--f-mono); font-size:.58rem; letter-spacing:.14em;
+  text-transform:uppercase; line-height:1.9;
+  color:var(--ink-faint);
+}
+.margin-note::after{
+  content:''; display:block; width:26px; height:1px;
+  background:var(--gold); opacity:.75;
+  margin:10px 0 0 auto;
+}
+.plate .margin-note{ color:var(--cream-soft); }
+@media (min-width:1560px){ .margin-note{ display:block; } }
+
+/* =========================================================================
+   THE PHYSICAL VOLUME — leaf, ribbon, placard, seal
+   ========================================================================= */
+.page-leaf{
+  position:fixed; inset:0; z-index:400;
+  background:
+    radial-gradient(80% 60% at 50% 50%, rgba(224,190,107,.16), transparent 60%),
+    var(--paper-deep);
+  border-top:1px solid var(--line-gold);
+  box-shadow:0 -24px 60px rgba(11,22,34,.28);
+  display:flex; align-items:center; justify-content:center;
+  transform:translateY(103%);
+  transition:transform .46s cubic-bezier(.7, 0, .28, 1);
+  pointer-events:none;
+}
+.page-leaf.is-covering{ transform:translateY(0); }
+.page-leaf .leaf-label{
+  font-family:var(--f-caps); font-size:.7rem; letter-spacing:.32em;
+  text-transform:uppercase; color:var(--ink-soft);
+  opacity:0; transform:translateY(8px);
+  transition:opacity .28s .14s, transform .28s .14s;
+}
+.page-leaf.is-covering .leaf-label{ opacity:1; transform:none; }
+
+/* Bookmark ribbon — imperial silk, gold-fringed. */
+.bookmark-ribbon{
+  position:fixed; top:0; right:clamp(18px, 4.5vw, 60px);
+  width:8px; height:34px; z-index:130;
+  background:linear-gradient(180deg, var(--carmine), var(--vermilion) 55%, #D6543F);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 9px), 0 100%);
+  box-shadow:1px 0 1px rgba(11,22,34,.24), inset 1px 0 0 rgba(214,180,94,.5);
+  pointer-events:none;
+}
+
+.page-placard{
+  position:fixed; left:clamp(16px, 3vw, 42px); bottom:24px; z-index:130;
+  font-family:var(--f-mono); font-size:.58rem; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--ink-soft);
+  background:var(--paper); border:1px solid var(--line-gold);
+  padding:9px 14px 8px;
+  box-shadow:0 2px 10px rgba(11,22,34,.12);
+  opacity:0; transform:translateY(8px);
+  transition:opacity .45s var(--ease), transform .45s var(--ease);
+  pointer-events:none;
+}
+.page-placard.is-shown{ opacity:1; transform:none; }
+@media (max-width:900px){ .page-placard, .bookmark-ribbon{ display:none; } }
+
+.press-stamp{ width:98px; height:98px; margin-top:38px; color:var(--gold-bright); opacity:.92; }
+.press-stamp text{ font-family:var(--f-mono); fill:currentColor; }
+.press-stamp .stamp-s{ font-family:var(--f-display); font-style:italic; }
+.press-stamp .stamp-ring{ transform-origin:60px 60px; animation:stamp-turn 70s linear infinite; }
+@keyframes stamp-turn{ to{ transform:rotate(360deg); } }
 
 /* =========================================================================
    REVEAL MOTION
@@ -660,9 +988,9 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
   .index-item{ padding-top:26px; }
   .index-item:nth-child(odd){ border-left:0; }
   .hero-cols{ grid-template-columns:1fr; align-items:start; }
-  .hero-aside{ border-left:0; border-top:1px solid var(--line); padding:26px 0 0; max-width:60ch; }
+  .hero-aside{ border-left:0; border-top:2px solid var(--line-gold); padding:26px 0 0; max-width:60ch; }
   .folio-grid{ grid-template-columns:1fr; }
-  .folio-side{ position:static; border-left:0; border-top:1px solid var(--line); padding:26px 0 0; }
+  .folio-side{ position:static; border-left:0; border-top:2px solid var(--line-gold); padding:26px 0 0; }
   .philosophy .phil-grid{ grid-template-columns:1fr; }
 }
 @media (max-width: 860px){
@@ -680,6 +1008,136 @@ h1 em, h2 em, h3 em{ font-style:italic; font-weight:300; color:var(--accent); }
 @media (max-width: 560px){
   .index-strip{ grid-template-columns:1fr; border-left:0; }
   .index-item{ border-right:0; border-bottom:1px solid var(--line); padding-left:0; }
+  .index-item::before{ left:0; }
   .footer-top{ grid-template-columns:1fr; }
   .hero{ padding-top:130px; }
+}
+
+/* =========================================================================
+   THE LIVING VOLUME — motion, presence, awe
+   Everything below is additive and never touches scroll mechanics.
+   ========================================================================= */
+
+/* ---- Tranche dorée catches the light, slowly ------------------------- */
+body::after{
+  background:linear-gradient(90deg,
+    #7E5F27, #D9BA6C, #A6853B, #F0D68C, #916E2A,
+    #CDA85B, #7E5F27, #D9BA6C, #A6853B, #F0D68C, #916E2A);
+  background-size:220% 100%;
+  animation:tranche 9s linear infinite;
+}
+@keyframes tranche{ to{ background-position:220% 0; } }
+
+/* ---- Choreographed reveals — ink settling onto the page -------------- */
+[data-reveal]{
+  filter:blur(9px);
+  transition:opacity 1.05s var(--ease), transform 1.15s var(--ease), filter 1s var(--ease);
+  will-change:opacity, transform, filter;
+}
+[data-reveal].is-visible{ filter:blur(0); }
+
+/* A heading can wipe in like ink drawn across the sheet */
+[data-reveal="ink"]{
+  clip-path:inset(0 100% 0 0);
+  transform:none;
+  transition:clip-path 1.1s var(--ease), opacity .8s var(--ease), filter 1s var(--ease);
+}
+[data-reveal="ink"].is-visible{ clip-path:inset(0 0 0 0); }
+
+/* Section titles draw a gilt hairline as they arrive */
+.section-head h2, .prose-side h2{ position:relative; }
+.section-head h2::before{
+  content:''; position:absolute; left:0; bottom:-14px; height:2px; width:0;
+  background:linear-gradient(90deg, var(--gold), var(--gold-bright), transparent);
+  transition:width 1.1s .25s var(--ease);
+}
+[data-reveal].is-visible .section-head h2::before,
+.section-head[data-reveal].is-visible h2::before{ width:min(120px, 40%); }
+
+/* ---- The opening of the volume — a cinematic first load -------------- */
+html.is-opening{ overflow:hidden; }
+#opening{
+  position:fixed; inset:0; z-index:850;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:22px; color:var(--cream); text-align:center;
+  background:
+    radial-gradient(80% 60% at 50% -6%, rgba(214,180,94,.18), transparent 55%),
+    radial-gradient(90% 120% at 0% 108%, rgba(31,58,147,.55), transparent 60%),
+    radial-gradient(70% 90% at 108% 116%, rgba(151,36,63,.34), transparent 58%),
+    linear-gradient(160deg, var(--night), #10233B 46%, var(--bistre));
+  will-change:transform;
+  transition:transform 1s cubic-bezier(.76,0,.24,1);
+}
+#opening.is-lifting{ transform:translateY(-101%); }
+#opening .op-seal{
+  width:112px; height:112px; color:var(--gold-bright);
+  opacity:0; transform:scale(.9) rotate(-6deg);
+  transition:opacity .8s var(--ease), transform 1s var(--ease);
+}
+#opening.is-ready .op-seal{ opacity:.95; transform:none; }
+#opening .op-seal text{ font-family:var(--f-mono); fill:currentColor; }
+#opening .op-seal .op-s{ font-family:var(--f-display); font-style:italic; }
+#opening .op-seal .op-ring{ transform-origin:60px 60px; animation:stamp-turn 44s linear infinite; }
+#opening .op-title{
+  font-family:var(--f-display); font-weight:400;
+  font-size:clamp(1.6rem, 4vw, 2.6rem); letter-spacing:.01em;
+  opacity:0; transform:translateY(12px);
+  transition:opacity .8s .15s var(--ease), transform .8s .15s var(--ease);
+}
+#opening.is-ready .op-title{ opacity:1; transform:none; }
+#opening .op-sub{
+  font-family:var(--f-caps); font-size:.7rem;
+  letter-spacing:.34em; text-transform:uppercase; color:var(--cream-soft);
+  opacity:0; transition:opacity .8s .3s var(--ease);
+}
+#opening.is-ready .op-sub{ opacity:1; }
+#opening .op-rule{
+  width:0; height:1px; margin-top:4px;
+  background:linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  transition:width 1s .2s var(--ease);
+}
+#opening.is-ready .op-rule{ width:min(240px, 52vw); }
+
+/* ---- The living frontispiece — a wet-pigment field you paint ---------- */
+.hero canvas.pigment-field{
+  position:absolute; inset:0; z-index:0;
+  width:100%; height:100%;
+  pointer-events:none;
+  -webkit-mask-image:radial-gradient(125% 105% at 62% 42%, #000 58%, transparent 100%);
+          mask-image:radial-gradient(125% 105% at 62% 42%, #000 58%, transparent 100%);
+}
+.hero.has-canvas .hero-orn{ display:none; }
+.hero > .wrap{ position:relative; z-index:2; }
+/* a breath of celadon behind the copy so the paint never fights the words */
+.hero.has-canvas > .wrap::before{
+  content:''; position:absolute; z-index:-1;
+  left:-12%; right:20%; top:-6%; bottom:-6%;
+  background:radial-gradient(62% 80% at 22% 54%, rgba(207,230,221,.78), rgba(207,230,221,.32) 55%, transparent 74%);
+  pointer-events:none;
+}
+@media (max-width: 700px){
+  .hero.has-canvas > .wrap::before{ left:-20%; right:-20%; background:radial-gradient(90% 70% at 50% 46%, rgba(207,230,221,.82), transparent 78%); }
+}
+
+/* ---- Cinematic plates — the pigment blooms as you approach the work --- */
+.folio{ --pig:var(--lapis); transition:transform .55s var(--ease), box-shadow .55s var(--ease); }
+.folio:nth-of-type(6n+2){ --pig:var(--vermilion); }
+.folio:nth-of-type(6n+3){ --pig:var(--malachite); }
+.folio:nth-of-type(6n+4){ --pig:var(--ochre); }
+.folio:nth-of-type(6n+5){ --pig:var(--carmine); }
+.folio:nth-of-type(6n+6){ --pig:var(--tyrian); }
+.folio::before{
+  content:''; position:absolute; inset:-1% -4%; z-index:-1; opacity:0;
+  background:radial-gradient(44% 60% at var(--mx,30%) var(--my,42%),
+            color-mix(in srgb, var(--pig) 22%, transparent), transparent 72%);
+  transition:opacity .6s var(--ease);
+  pointer-events:none;
+}
+.folio:hover{ transform:translateY(-5px); }
+.folio:hover::before{ opacity:1; }
+.folio-no{ display:inline-block; transform-origin:left center; transition:transform .55s var(--ease); }
+.folio:hover .folio-no{ transform:scale(1.07); }
+@media (hover:none){
+  .folio:hover{ transform:none; }
+  .folio::before{ display:none; }
 }

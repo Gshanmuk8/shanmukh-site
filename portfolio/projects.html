@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Selected projects by Shanmukh Sriram — FitAI, SkillMesh, LocalLens, MarketMind, and a Smart India Hackathon tourist-safety system.">
 <title>Projects — Shanmukh Sriram</title>
+<meta name="theme-color" content="#CFE6DD">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23CFE6DD'/%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%239C7C2E' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23C6362B' stroke-width='1'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-style='italic' font-size='32' text-anchor='middle' fill='%231F3A93'%3ES%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -37,9 +39,9 @@
 <!-- ============================= HEADER ============================= -->
 <header class="page-header">
   <div class="wrap">
-    <div class="crumb" data-reveal>Home <span>/</span> Projects</div>
-    <h1 data-reveal>The <em>catalogue.</em></h1>
-    <p class="lede" data-reveal>Each project began with a real problem, not a technology. What follows is the problem, the approach, and what building it taught me — with source and live demos throughout.</p>
+    <div class="crumb" data-reveal>Collected works <span>·</span> Ch. II — The plates</div>
+    <h1 data-reveal>The <em>plates.</em></h1>
+    <p class="lede" data-reveal>Five projects, each one starting from a real problem instead of a technology. For each, I've written the problem, my approach, and what building it taught me — with source code and live demos throughout.</p>
   </div>
 </header>
 
@@ -47,27 +49,28 @@
 <div class="wrap">
 
   <!-- ============================= FOLIO 01 — FITAI ============================= -->
-  <article class="folio" style="border-top:0;">
+  <article class="folio" data-roman="I" style="border-top:0;">
     <div class="folio-head" data-reveal>
-      <span class="folio-no">No. 01</span>
+      <span class="folio-no">Plate I.</span>
       <h3>FitAI</h3>
     </div>
     <span class="folio-sub" data-reveal>AI-Powered Fitness Coach &amp; Progress Tracker</span>
     <p class="folio-stack" data-reveal><b>Stack —</b> JavaScript · React · Vite · Node.js · Express.js · Supabase · Google Gemini API</p>
     <div class="folio-grid">
+      <span class="margin-note">the plates follow in order of making</span>
       <ul class="notes" data-reveal>
-        <li>Identified a common problem of poor accountability and inconsistent progress tracking in personal fitness journeys.</li>
-        <li>Designed and built a full-stack, AI-powered fitness platform enabling users to log workouts, monitor progress, and receive personalised coaching guidance.</li>
-        <li>Implemented secure authentication, real-time data management, and AI-driven insights using the Google Gemini API.</li>
-        <li>Architected a multi-provider AI cascade with health monitoring and automated fallback logic — if Gemini is unavailable the system falls back to OpenRouter, and then to Groq — ensuring reliable AI responses within free-tier limitations.</li>
-        <li>Took the product from initial idea and problem discovery to deployment and real-world usage, learning how products evolve through user feedback.</li>
-        <li>Focused on building features that improve consistency, motivation, and accountability rather than simply tracking workout data.</li>
-        <li>Continuously iterated on the platform based on testing and usage patterns to understand what actually delivers value to users.</li>
-        <li>Gained first-hand experience balancing engineering decisions, user experience, and product priorities while shipping an AI-driven application.</li>
+        <li>Spotted a common problem: people struggle with accountability and tracking their progress on their fitness journey.</li>
+        <li>Designed and built a full-stack AI fitness platform where users can log workouts, track progress, and get personalised coaching.</li>
+        <li>Added secure login, real-time data handling, and AI insights using the Google Gemini API.</li>
+        <li>Built a multi-provider AI cascade with health checks and automatic fallback — if Gemini goes down, it falls back to OpenRouter, and then to Groq — so the AI responses stay reliable even within free-tier limits.</li>
+        <li>Took the whole thing from the initial idea and problem discovery all the way to deployment and real use, and learned how products change based on user feedback.</li>
+        <li>Focused on features that actually help with consistency, motivation, and accountability instead of just tracking workout data.</li>
+        <li>Kept iterating on the platform based on testing and how people used it, to figure out what actually gives users value.</li>
+        <li>Got real experience balancing engineering decisions, user experience, and product priorities while shipping an AI app.</li>
       </ul>
       <aside class="folio-side" data-reveal>
         <h5>Field note</h5>
-        <p class="side-note">The hardest problem wasn't the AI — it was reliability. A coach that sometimes doesn't answer is worse than no coach, which is why the provider cascade exists.</p>
+        <p class="side-note">The hardest part wasn't the AI — it was reliability. A coach that sometimes doesn't respond is worse than no coach at all, which is the whole reason the provider cascade exists.</p>
         <h5>Access</h5>
         <div class="folio-links">
           <a href="https://fit-ai-teal-nu.vercel.app/" target="_blank" rel="noopener" class="tlink">Live demo ↗</a>
@@ -78,27 +81,27 @@
   </article>
 
   <!-- ============================= FOLIO 02 — SKILLMESH ============================= -->
-  <article class="folio">
+  <article class="folio" data-roman="II">
     <div class="folio-head" data-reveal>
-      <span class="folio-no">No. 02</span>
+      <span class="folio-no">Plate II.</span>
       <h3>SkillMesh</h3>
     </div>
     <span class="folio-sub" data-reveal>Community-Driven Skill-Sharing Platform</span>
     <p class="folio-stack" data-reveal><b>Stack —</b> TypeScript · React · Vite · Node.js · Express.js · Supabase</p>
     <div class="folio-grid">
       <ul class="notes" data-reveal>
-        <li>Identified an opportunity for a platform centred on practical, peer-to-peer skill exchange rather than passive content sharing.</li>
-        <li>Designed and built a prototype enabling users to discover others by skill, showcase what they can teach, and connect to learn.</li>
-        <li>Applied product thinking by validating the concept through rapid prototyping and iterative feature development.</li>
-        <li>Explored mechanisms for matching users based on complementary skills, interests, and learning goals to encourage meaningful connections.</li>
-        <li>Focused on reducing friction in discovering mentors, collaborators, and peers within local and online communities.</li>
-        <li>Designed the platform around active participation and knowledge exchange rather than passive content consumption.</li>
-        <li>Used rapid iteration and feature experimentation to understand which interactions created genuine value for users.</li>
-        <li>Strengthened my understanding of community-driven products, user engagement, and the challenges of building network-based platforms.</li>
+        <li>Saw an opportunity for a platform built around people actually swapping skills with each other instead of just passively sharing content.</li>
+        <li>Designed and built a prototype where users can find others by skill, show what they can teach, and connect to learn.</li>
+        <li>Used product thinking to validate the idea through fast prototyping and iterating on features.</li>
+        <li>Looked into ways to match users based on complementary skills, interests, and learning goals so they'd actually make useful connections.</li>
+        <li>Focused on making it easier to find mentors, collaborators, and peers in both local and online communities.</li>
+        <li>Designed the platform around actually participating and sharing knowledge, not just passively consuming content.</li>
+        <li>Used quick iteration and feature experiments to figure out which interactions actually gave users value.</li>
+        <li>Learned a lot about community-driven products, user engagement, and how hard it is to build network-based platforms.</li>
       </ul>
       <aside class="folio-side" data-reveal>
         <h5>Field note</h5>
-        <p class="side-note">Network products live or die on their first interactions. Most of the iteration went into the moment two people with complementary skills actually find each other.</p>
+        <p class="side-note">Network products live or die on the first interactions. Most of my iteration went into that one moment where two people with matching skills actually find each other.</p>
         <h5>Access</h5>
         <div class="folio-links">
           <a href="https://skillmash.vercel.app/" target="_blank" rel="noopener" class="tlink">Live demo ↗</a>
@@ -109,25 +112,25 @@
   </article>
 
   <!-- ============================= FOLIO 03 — LOCALLENS ============================= -->
-  <article class="folio">
+  <article class="folio" data-roman="III">
     <div class="folio-head" data-reveal>
-      <span class="folio-no">No. 03</span>
+      <span class="folio-no">Plate III.</span>
       <h3>LocalLens</h3>
     </div>
     <span class="folio-sub" data-reveal>Zero-Friction Local Discovery Platform</span>
     <p class="folio-stack" data-reveal><b>Stack —</b> React · Vite · OpenStreetMap · Leaflet.js · Nominatim API · Overpass API</p>
     <div class="folio-grid">
       <ul class="notes" data-reveal>
-        <li>Identified the friction in traditional map applications where users must manually search, navigate multiple screens, and interact with account-based ecosystems before discovering nearby places.</li>
-        <li>Built a privacy-first local discovery platform that instantly surfaces nearby restaurants, cafés, hotels, parks, attractions, and shopping locations using real-time GPS coordinates.</li>
-        <li>Reduced manual effort compared to conventional map workflows by eliminating repeated searches, category switching, and location entry — users discover their surroundings immediately after opening the application.</li>
-        <li>Implemented automatic location-aware updates and radius-based filtering to keep recommendations relevant as users move through different areas.</li>
-        <li>Designed the system entirely on open geographic data infrastructure using OpenStreetMap, Nominatim, and Overpass APIs — a fully serverless, cost-free architecture.</li>
-        <li>Focused on simplicity and speed by removing accounts, tracking, social features, and unnecessary UI complexity to create a true "open and discover" experience.</li>
+        <li>Noticed how annoying regular map apps are — you have to search manually, go through a bunch of screens, and deal with accounts before you can even find places near you.</li>
+        <li>Built a privacy-first local discovery app that instantly shows nearby restaurants, cafés, hotels, parks, attractions, and shops using real-time GPS.</li>
+        <li>Cut out a lot of the manual effort of normal map apps — no repeated searches, no switching categories, no typing in your location — you just open the app and immediately see what's around you.</li>
+        <li>Added automatic location updates and radius-based filtering so the recommendations stay relevant as you move around.</li>
+        <li>Built the whole thing on open map data using OpenStreetMap, Nominatim, and Overpass APIs — a fully serverless setup that costs nothing to run.</li>
+        <li>Kept it simple and fast by dropping accounts, tracking, social features, and extra UI clutter, to make a real "open and discover" experience.</li>
       </ul>
       <aside class="folio-side" data-reveal>
         <h5>Field note</h5>
-        <p class="side-note">A deliberate exercise in subtraction: no accounts, no tracking, no feed. The entire product is the three seconds between opening the app and seeing what's around you.</p>
+        <p class="side-note">This one was on purpose all about taking things away: no accounts, no tracking, no feed. The whole product is basically the three seconds between opening the app and seeing what's around you.</p>
         <h5>Access</h5>
         <div class="folio-links">
           <a href="https://locallens-ten.vercel.app/" target="_blank" rel="noopener" class="tlink">Live demo ↗</a>
@@ -138,25 +141,25 @@
   </article>
 
   <!-- ============================= FOLIO 04 — SAN-LOC ============================= -->
-  <article class="folio">
+  <article class="folio" data-roman="IV">
     <div class="folio-head" data-reveal>
-      <span class="folio-no">No. 04</span>
+      <span class="folio-no">Plate IV.</span>
       <h3>San-Loc</h3>
     </div>
     <span class="folio-sub" data-reveal>Tourist Safety System — Smart India Hackathon</span>
     <p class="folio-stack" data-reveal><b>Stack —</b> HTML · CSS · JavaScript · Node.js · Express.js · MongoDB · JWT Authentication</p>
     <div class="folio-grid">
       <ul class="notes" data-reveal>
-        <li>Designed a tourist safety solution using digital identity verification, geofencing, and rule-based emergency alerts for high-risk zones.</li>
-        <li>Explored how location intelligence and geofencing could proactively identify high-risk areas and trigger contextual safety recommendations.</li>
-        <li>Designed rule-based emergency workflows capable of notifying authorities or emergency contacts during critical situations.</li>
-        <li>Focused on reducing response time during emergencies by enabling automated alerts and location-aware assistance mechanisms.</li>
-        <li>Evaluated the challenges of balancing user privacy, security, and accessibility while designing safety-critical systems.</li>
-        <li>Gained valuable experience translating a real-world public safety problem into a scalable technology solution under hackathon constraints.</li>
+        <li>Designed a tourist safety solution using digital ID verification, geofencing, and rule-based emergency alerts for high-risk areas.</li>
+        <li>Looked into how location data and geofencing could spot high-risk areas ahead of time and trigger safety recommendations based on the situation.</li>
+        <li>Built rule-based emergency workflows that can alert authorities or emergency contacts in critical situations.</li>
+        <li>Focused on cutting down response time in emergencies with automated alerts and location-aware help.</li>
+        <li>Thought through the tricky balance between user privacy, security, and accessibility when designing safety-critical systems.</li>
+        <li>Got good experience turning a real public safety problem into a scalable tech solution under hackathon time limits.</li>
       </ul>
       <aside class="folio-side" data-reveal>
         <h5>Field note</h5>
-        <p class="side-note">Safety-critical systems invert the usual trade-offs: a false alarm is annoying, but a missed one is unacceptable. Designing under that asymmetry — on a hackathon clock — was the real lesson.</p>
+        <p class="side-note">Safety-critical systems flip the usual trade-offs: a false alarm is annoying, but missing a real one is unacceptable. Designing around that imbalance — on a hackathon clock — was the real lesson for me.</p>
         <h5>Access</h5>
         <div class="folio-links">
           <a href="https://github.com/Gshanmuk8/San-Loc" target="_blank" rel="noopener" class="tlink">GitHub repository ↗</a>
@@ -166,25 +169,25 @@
   </article>
 
   <!-- ============================= FOLIO 05 — MARKETMIND ============================= -->
-  <article class="folio">
+  <article class="folio" data-roman="V">
     <div class="folio-head" data-reveal>
-      <span class="folio-no">No. 05</span>
+      <span class="folio-no">Plate V.</span>
       <h3>MarketMind</h3>
     </div>
     <span class="folio-sub" data-reveal>AI-Powered Competitive Intelligence Platform</span>
     <p class="folio-stack" data-reveal><b>Stack —</b> TypeScript · Next.js · React · Tailwind CSS · Supabase · Prisma · Inngest · OpenRouter</p>
     <div class="folio-grid">
       <ul class="notes" data-reveal>
-        <li>Saw a few early-stage startups tracking competitors manually — spreadsheets, bookmarked pricing pages, checking rival sites week after week — and built MarketMind so they can analyse their competitive landscape whenever they want.</li>
-        <li>Designed it as a briefing, not a dashboard: one URL in, and in about 60 seconds the engine reads the product the way an analyst would.</li>
-        <li>Built automatic competitor discovery that maps and ranks the entire competitive landscape from that single URL.</li>
-        <li>Implemented continuous monitoring of thousands of public signals — read around the clock, so the market is watched even when the team isn't.</li>
-        <li>Ensured raw events never reach the user: every signal arrives already thought through, with why it matters and a recommended action attached.</li>
-        <li>Kept facts, inferences, and recommendations strictly distinct — verified sources are labelled as verified, and AI inferences carry their own confidence scores.</li>
+        <li>Saw a few early startups tracking their competitors by hand — spreadsheets, bookmarked pricing pages, checking rival sites week after week — so I built MarketMind so they can look at their competitive landscape whenever they want.</li>
+        <li>Designed it to be a briefing, not a dashboard: you put in one URL, and in about 60 seconds it reads the product the way an analyst would.</li>
+        <li>Built automatic competitor discovery that maps out and ranks the whole competitive landscape from that one URL.</li>
+        <li>Set up continuous monitoring of thousands of public signals — read around the clock, so the market gets watched even when the team isn't looking.</li>
+        <li>Made sure raw events never hit the user directly: every signal comes already thought through, with why it matters and a suggested action attached.</li>
+        <li>Kept facts, inferences, and recommendations clearly separate — verified sources are labelled as verified, and AI inferences come with their own confidence scores.</li>
       </ul>
       <aside class="folio-side" data-reveal>
         <h5>Field note</h5>
-        <p class="side-note">Most tools hand you a dashboard and leave the thinking to you. MarketMind is built to be a briefing — the first thing you open every morning, so you know your market before it moves.</p>
+        <p class="side-note">Most tools just hand you a dashboard and leave the thinking to you. MarketMind is meant to be a briefing — the first thing you open every morning, so you know your market before it moves.</p>
         <h5>Access</h5>
         <div class="folio-links">
           <a href="https://market-mind-tau.vercel.app/" target="_blank" rel="noopener" class="tlink">Live demo ↗</a>
@@ -199,9 +202,9 @@
 <!-- ============================= CLOSING ============================= -->
 <section class="section plate closing" style="margin-top:var(--sect);">
   <div class="wrap">
-    <div class="label" data-reveal><span class="num">05</span> An open invitation</div>
+    <div class="label" data-reveal><span class="num">06</span> An open invitation</div>
     <h2 data-reveal>Have a problem worth <em>building for?</em></h2>
-    <p class="lede" data-reveal>I'm always excited to discuss intelligent systems, research, startups, and building technology that matters.</p>
+    <p class="lede" data-reveal>I'm always up for talking about intelligent systems, research, startups, and building tech that actually matters.</p>
     <div class="cta-row" data-reveal>
       <a href="contact.html" class="btn btn-solid">Let's build something meaningful</a>
     </div>
@@ -215,6 +218,15 @@
     <div class="footer-top">
       <div>
         <h3>A personal operating system for ideas, research, projects, and <em>exploration.</em></h3>
+        <svg class="press-stamp" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="57" fill="none" stroke="currentColor" stroke-width="1"/>
+          <circle cx="60" cy="60" r="33" fill="none" stroke="currentColor" stroke-width="1"/>
+          <g class="stamp-ring">
+            <path id="stamp-arc" d="M60,60 m-45,0 a45,45 0 1,1 90,0 a45,45 0 1,1 -90,0" fill="none"/>
+            <text font-size="8" letter-spacing="1.1"><textPath href="#stamp-arc">COLLECTED WORKS · SHANMUKH SRIRAM · MMXXVI · </textPath></text>
+          </g>
+          <text class="stamp-s" x="60" y="61" text-anchor="middle" dominant-baseline="central" font-size="36" fill="currentColor">S</text>
+        </svg>
       </div>
       <div class="footer-col">
         <h5>Index</h5>
@@ -238,7 +250,7 @@
     </div>
     <div class="footer-bottom">
       <span>© <span data-year>2026</span> Shanmukh Sriram</span>
-      <span>Designed &amp; built with intention</span>
+      <span>Set in Bodoni &amp; Garamond · Impressed on papier vert-d'eau № E4E7E0 · Second impression</span>
     </div>
   </div>
 </footer>
