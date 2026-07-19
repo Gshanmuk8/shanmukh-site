@@ -9,6 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer  = matchMedia('(pointer: fine)').matches;
 
+  /* ---- Day & night — restore the reader's chosen light ---- */
+  const THEME_KEY = 'sk-theme';
+  let storedTheme = null;
+  try { storedTheme = localStorage.getItem(THEME_KEY); } catch (e) {}
+  document.documentElement.setAttribute('data-theme',
+    storedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+
   /* ---- Skip link — keyboard readers go straight to the text block ---- */
   const landmark = document.querySelector('main') || document.querySelector('.hero');
   if (landmark){
@@ -198,6 +205,34 @@ document.addEventListener('DOMContentLoaded', () => {
     el.textContent = new Date().getFullYear();
   });
 
+  /* ---- The wax seal — correspondence closes with cochineal wax ---------
+     Letters were sealed before they were sent. The seal on the closing
+     plate is pressed wax with the author's die; taking it opens a reply. */
+  if (path === 'contact.html'){
+    const closingPlate = document.querySelector('.plate.closing');
+    const sealWrap = closingPlate && (closingPlate.querySelector(':scope > .wrap') || closingPlate);
+    if (sealWrap){
+      const seal = document.createElement('a');
+      seal.className = 'wax-seal';
+      seal.href = 'mailto:gshanmukhasriram3@gmail.com';
+      seal.setAttribute('aria-label', 'Seal your reply — email Shanmukh');
+      seal.innerHTML =
+        '<svg viewBox="0 0 120 120" aria-hidden="true">' +
+          '<defs><radialGradient id="ws-wax" cx="42%" cy="36%" r="74%">' +
+            '<stop offset="0%" stop-color="#C24557"/>' +
+            '<stop offset="55%" stop-color="#97243F"/>' +
+            '<stop offset="100%" stop-color="#651A2E"/>' +
+          '</radialGradient></defs>' +
+          '<path fill="url(#ws-wax)" d="M60,7 C80,3 100,14 107,33 C113,49 104,62 108,78 C110,96 92,111 71,112 C56,113 44,116 30,108 C14,99 8,84 12,68 C15,55 8,45 12,31 C18,13 42,10 60,7 Z"/>' +
+          '<path fill="rgba(255,230,214,.15)" d="M28,22 C40,12 62,9 78,16 C64,16 40,22 30,34 C26,30 26,26 28,22 Z"/>' +
+          '<circle cx="60" cy="60" r="36" fill="none" stroke="rgba(46,8,18,.55)" stroke-width="1.6"/>' +
+          '<circle cx="60" cy="60" r="31" fill="none" stroke="rgba(255,220,205,.28)" stroke-width="1" stroke-dasharray="2.4 3.2"/>' +
+          '<text x="60" y="62" text-anchor="middle" dominant-baseline="central" font-size="40" font-style="italic" fill="#57101F" stroke="rgba(255,225,210,.3)" stroke-width=".8">S</text>' +
+        '</svg>';
+      sealWrap.appendChild(seal);
+    }
+  }
+
   /* ---- Correspondence — make "email" reliably open a composer ----------
      mailto: only fires if the visitor has a desktop mail client set as the
      default handler; on many desktops that is unset, so the click does
@@ -308,72 +343,143 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ctx = canvas.getContext('2d');
 
-    // the European pigment cabinet — orchestrated, never scattered
-    const CABINET = {
-      lapis:     [31, 58, 147],   // IT · oltremare
-      deeplapis: [26, 47, 116],
-      malachite: [30, 107, 87],   // RU · malachite
-      verdigris: [78, 107, 93],
-      cochineal: [151, 36, 63],   // ES · carmín
-      tyrian:    [92, 42, 80],    // imperial purple
-      ochre:     [178, 122, 40],  // ES · Spanish ochre
-      vermilion: [198, 54, 43]    // RU/IT · cinnabar
+    // The pigment cabinet, in both lights: the same pigments by day, and
+    // their luminous selves under lamplight — never a mere inversion.
+    const CABINETS = {
+      light: {
+        lapis: [31,58,147],   deeplapis: [26,47,116],  malachite: [30,107,87],
+        verdigris: [78,107,93], cochineal: [151,36,63], tyrian: [92,42,80],
+        ochre: [178,122,40],  vermilion: [198,54,43],  gold: [176,138,62],
+        naples: [224,190,107], rose: [190,110,134],
+        paper: '#CFE6DD'
+      },
+      dark: {
+        lapis: [94,127,214],  deeplapis: [70,100,190], malachite: [79,168,140],
+        verdigris: [127,163,145], cochineal: [210,100,128], tyrian: [176,115,163],
+        ochre: [217,165,78],  vermilion: [224,106,85], gold: [201,164,78],
+        naples: [232,204,133], rose: [214,147,168],
+        paper: '#0D1826'
+      }
     };
-    const GOLD = [176, 138, 62];
-    const VEIL = 'rgba(207,230,221,0.015)';
+    let CAB, GOLD, NAPLES, ROSE;
 
     // each chapter is illuminated in its own pigment; the first is dominant
     const CHAPTER = {
-      'index.html':    ['lapis', 'deeplapis', 'malachite', 'ochre', 'tyrian'],
-      'about.html':    ['malachite', 'verdigris', 'lapis', 'ochre'],
+      'index.html':    ['lapis', 'malachite', 'ochre', 'cochineal', 'tyrian'],
+      'about.html':    ['malachite', 'ochre', 'lapis', 'cochineal'],
       'projects.html': ['lapis', 'vermilion', 'malachite', 'ochre', 'tyrian'],
       'blog.html':     ['ochre', 'malachite', 'lapis', 'cochineal'],
-      'contact.html':  ['cochineal', 'tyrian', 'vermilion', 'lapis']
+      'contact.html':  ['cochineal', 'tyrian', 'vermilion', 'ochre']
     };
     const keys = CHAPTER[location.pathname.split('/').pop()] || CHAPTER['index.html'];
     // weight the chapter's own pigment most heavily, the rest as accents
-    const POOL = [];
-    keys.forEach((k, i) => {
-      const n = i === 0 ? 5 : (i === 1 ? 3 : 2);
-      for (let j = 0; j < n; j++) POOL.push(CABINET[k]);
-    });
+    let POOL = [];
+    const setCabinet = () => {
+      CAB = CABINETS[document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'];
+      GOLD = CAB.gold; NAPLES = CAB.naples; ROSE = CAB.rose;
+      POOL = [];
+      keys.forEach((k, i) => {
+        const n = i === 0 ? 5 : (i === 1 ? 3 : 2);
+        for (let j = 0; j < n; j++) POOL.push(CAB[k]);
+      });
+    };
+    setCabinet();
 
     let W = 0, H = 0, DPR = 1, particles = [];
     let shift = 0, targetShift = 0;              // scroll gently stirs the current
     let dip = null;                              // the pigment of the plate being read
     const mouse = { x: -9999, y: -9999, active: false };
 
+    /* THE UNDERPAINTING — the painter's first act: broad transparent
+       glazes of many pigments laid into the wet ground. Rendered once
+       per size into an offscreen sheet; the living strokes swim above
+       it, and the veil fades trails back toward this painting, never
+       toward flat colour. */
+    const ground = document.createElement('canvas');
+    const paintGround = () => {
+      ground.width = Math.max(1, W); ground.height = Math.max(1, H);
+      const g = ground.getContext('2d');
+      g.fillStyle = CAB.paper;
+      g.fillRect(0, 0, W, H);
+      const GLAZES = POOL.concat([NAPLES, ROSE, GOLD]);
+      const n = 11;
+      for (let i = 0; i < n; i++){
+        const col = GLAZES[(Math.random() * GLAZES.length) | 0].join(',');
+        const r = (0.16 + Math.random() * 0.30) * Math.max(W, H);
+        const x = Math.random() * W, y = Math.random() * H;
+        const grad = g.createRadialGradient(x, y, 0, x, y, r);
+        grad.addColorStop(0,    'rgba(' + col + ',0.07)');
+        grad.addColorStop(0.55, 'rgba(' + col + ',0.035)');
+        grad.addColorStop(1,    'rgba(' + col + ',0)');
+        g.fillStyle = grad;
+        g.fillRect(x - r, y - r, r * 2, r * 2);
+      }
+      /* at night the underpainting is an observatory sky: a scatter of
+         stars sunk beneath the paint, the brightest wearing a faint halo */
+      if (CAB === CABINETS.dark){
+        const nStars = Math.round(W * H / 15000);
+        for (let i = 0; i < nStars; i++){
+          const x = Math.random() * W, y = Math.random() * H, m = Math.random();
+          if (m > 0.93){
+            const halo = g.createRadialGradient(x, y, 0, x, y, 7);
+            halo.addColorStop(0, 'rgba(205,218,240,.22)');
+            halo.addColorStop(1, 'rgba(205,218,240,0)');
+            g.fillStyle = halo;
+            g.fillRect(x - 7, y - 7, 14, 14);
+          }
+          g.fillStyle = 'rgba(228,224,206,' + (0.2 + m * 0.5).toFixed(2) + ')';
+          g.beginPath();
+          g.arc(x, y, m > 0.93 ? 1.1 : 0.4 + m * 0.5, 0, 7);
+          g.fill();
+        }
+      }
+    };
+
+    /* Each stroke is laid as paint, not ink: a darker shadow pass under
+       the ridge, the pigment body, then a lit crest where the raking
+       light catches the impasto. Colours are mixed once, at spawn. */
     const spawn = (x, y) => {
-      const gold = Math.random() < 0.12;
+      const gold = Math.random() < 0.11;
       const col = gold ? GOLD
         : (dip && Math.random() < 0.45) ? dip
         : POOL[(Math.random() * POOL.length) | 0];
+      const r = col[0], g = col[1], b = col[2];
+      const a = gold ? 0.09 : 0.07;
+      const lr = (r + (255 - r) * 0.55) | 0,
+            lg = (g + (255 - g) * 0.55) | 0,
+            lb = (b + (255 - b) * 0.55) | 0;
+      /* composition: the paint gathers in the open field to the right,
+         and rests where the text is read — density, then quiet */
+      const nx = x != null ? x
+        : (Math.random() < 0.3 ? Math.random() * W : W * Math.sqrt(Math.random()));
+      const ny = y == null ? Math.random() * H : y;
       return {
-        x: x == null ? Math.random() * W : x,
-        y: y == null ? Math.random() * H : y,
-        px: x || 0, py: y || 0,
-        life: 300 + Math.random() * 460,
-        w: gold ? 0.5 + Math.random() * 0.7 : 0.7 + Math.random() * 1.5,
-        a: gold ? 0.06 : 0.038,
-        col
+        x: nx, y: ny, px: nx, py: ny,
+        life: 240 + Math.random() * 420,
+        w: gold ? 0.6 + Math.random() * 1 : 1 + Math.random() * 2.2,
+        s: 0.35 + Math.random() * 0.55,          // hand pressure: each stroke its own speed
+        ao: (Math.random() - 0.5) * 0.8,         // each stroke leans its own way
+        cs: 'rgba(' + ((r * .5) | 0) + ',' + ((g * .5) | 0) + ',' + ((b * .5) | 0) + ',' + (a * .45).toFixed(3) + ')',
+        cb: 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')',
+        cl: 'rgba(' + lr + ',' + lg + ',' + lb + ',' + (a * .6).toFixed(3) + ')'
       };
     };
 
     // a broad, gentle current — long sweeping arcs rather than tight curls
     const flow = (x, y, t) =>
-      (Math.sin(x * 0.0016 + t * 0.00018) +
-       Math.cos(y * 0.0018 - t * 0.00015) +
-       Math.sin((x + y) * 0.0009 + t * 0.00022 + shift)) * 0.85;
+      (Math.sin(x * 0.0011 + t * 0.00018) +
+       Math.cos(y * 0.0013 - t * 0.00015) +
+       Math.sin((x + y) * 0.0007 + t * 0.00022 + shift)) * 0.6;
 
     const resize = () => {
-      DPR = Math.min(2, window.devicePixelRatio || 1);
+      DPR = Math.min(1.75, window.devicePixelRatio || 1);
       W = window.innerWidth; H = window.innerHeight;
       canvas.width = W * DPR; canvas.height = H * DPR;
       canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      ctx.fillStyle = '#CFE6DD';
-      ctx.fillRect(0, 0, W, H);
-      const target = Math.min(760, Math.round(W * H / 2100));
+      paintGround();
+      ctx.drawImage(ground, 0, 0, W, H);
+      const target = Math.min(560, Math.round(W * H / 2600));
       particles = [];
       for (let i = 0; i < target; i++) particles.push(spawn());
     };
@@ -381,13 +487,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const frame = ts => {
       shift += (targetShift - shift) * 0.04;
       ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = VEIL;
-      ctx.fillRect(0, 0, W, H);
+      /* the veil: trails settle back into the underpainting, not into flatness */
+      ctx.globalAlpha = 0.02;
+      ctx.drawImage(ground, 0, 0, W, H);
+      ctx.globalAlpha = 1;
       ctx.lineCap = 'round';
       for (const p of particles){
         p.px = p.x; p.py = p.y;
-        const ang = flow(p.x, p.y, ts);
-        let vx = Math.cos(ang) * 0.62, vy = Math.sin(ang) * 0.62;
+        const ang = flow(p.x, p.y, ts) + p.ao;
+        let vx = Math.cos(ang) * 1.15 * p.s, vy = Math.sin(ang) * 1.15 * p.s;
         if (mouse.active){
           const dx = p.x - mouse.x, dy = p.y - mouse.y;
           const R = 150, d2 = dx * dx + dy * dy;
@@ -398,9 +506,22 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
         p.x += vx; p.y += vy; p.life--;
-        ctx.strokeStyle = 'rgba(' + p.col[0] + ',' + p.col[1] + ',' + p.col[2] + ',' + p.a + ')';
+        /* loaded strokes get the full impasto (shadow, body, lit crest);
+           hairline strokes take a single pass — half the draw cost, and
+           relief only ever showed on the loaded brush anyway */
+        if (p.w > 1.4){
+          ctx.strokeStyle = p.cs;
+          ctx.lineWidth = p.w + 0.5;
+          ctx.beginPath(); ctx.moveTo(p.px + 0.8, p.py + 1); ctx.lineTo(p.x + 0.8, p.y + 1); ctx.stroke();
+        }
+        ctx.strokeStyle = p.cb;
         ctx.lineWidth = p.w;
         ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y); ctx.stroke();
+        if (p.w > 1.4){
+          ctx.strokeStyle = p.cl;
+          ctx.lineWidth = Math.max(0.5, p.w * 0.38);
+          ctx.beginPath(); ctx.moveTo(p.px - 0.6, p.py - 0.8); ctx.lineTo(p.x - 0.6, p.y - 0.8); ctx.stroke();
+        }
         if (p.life <= 0 || p.x < -24 || p.x > W + 24 || p.y < -24 || p.y > H + 24){
           Object.assign(p, spawn());
         }
@@ -445,6 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resize();
     window.addEventListener('resize', resize);
+    window.addEventListener('sk-theme', () => { setCabinet(); resize(); });
     requestAnimationFrame(frame);
   }
 
@@ -554,12 +676,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /* ---- VII. The volvelle — the codex's working paper instrument -------
+  /* ---- VII. The volvelle — now the archive's astronomical clock -------
      Medieval books carried volvelles: layered rotating wheels for
-     computing stars and calendars. One is engraved into the header of
-     each interior chapter; its rings turn at their own slow rates and
-     the inner wheel is geared to the reader's scroll.                  */
-  const pageHeader = document.querySelector('.page-header');
+     computing stars and hours. One is engraved at the head of every
+     page of the volume; its rings turn at their own slow rates, its
+     single hand keeps true time in the old single-handed manner, and
+     the hour is inscribed at its centre.                               */
+  const pageHeader = document.querySelector('.page-header') || hero;
   if (pageHeader){
     const vol = document.createElementNS(NS, 'svg');
     vol.setAttribute('class', 'volvelle');
@@ -586,20 +709,258 @@ document.addEventListener('DOMContentLoaded', () => {
         '<path class="vol-tip" d="M150,56 L155,66 L150,76 L145,66 Z"/>' +
         '<circle cx="150" cy="150" r="4.5" class="vol-axis"/>' +
       '</g>' +
-      '<circle cx="150" cy="150" r="52" class="vol-line"/>';
+      '<circle cx="150" cy="150" r="52" class="vol-line"/>' +
+      '<text class="vol-time" x="150" y="180" text-anchor="middle" font-size="12">--:--</text>' +
+      /* THE NIGHT LAYER — after dark the clock unfolds into an astrolabe:
+         declination arcs, a small charted constellation, and the moon's
+         true phase this very night, computed, not drawn.               */
+      (() => {
+        const r = 8.6, syn = 29.530588853;
+        const days = ((Date.now() - Date.UTC(2000, 0, 6, 18, 14)) / 864e5) % syn;
+        const p = days / syn;
+        const rx = (Math.abs(Math.cos(p * 2 * Math.PI)) * r).toFixed(2);
+        const lit = p < 0.5
+          ? 'M0,' + (-r) + ' A' + r + ',' + r + ' 0 0 1 0,' + r + ' A' + rx + ',' + r + ' 0 0 ' + (p < 0.25 ? 0 : 1) + ' 0,' + (-r) + ' Z'
+          : 'M0,' + (-r) + ' A' + r + ',' + r + ' 0 0 0 0,' + r + ' A' + rx + ',' + r + ' 0 0 ' + (p > 0.75 ? 0 : 1) + ' 0,' + (-r) + ' Z';
+        return '<g class="vol-night">' +
+          '<path class="vol-decl" d="M70,190 A92,92 0 0 1 90,86"/>' +
+          '<path class="vol-decl" d="M226,182 A96,96 0 0 0 212,96"/>' +
+          '<path class="vol-link" d="M84,100 L98,84 L118,92 L108,118"/>' +
+          '<path class="vol-link" d="M196,76 L212,90"/>' +
+          '<g class="vol-star">' +
+            '<circle cx="84" cy="100" r="1.5"/><circle cx="98" cy="84" r="1.9"/>' +
+            '<circle cx="118" cy="92" r="1.2"/><circle cx="108" cy="118" r="1.4"/>' +
+            '<circle cx="196" cy="76" r="1.7"/><circle cx="212" cy="90" r="1.2"/>' +
+            '<circle cx="206" cy="208" r="1.5"/>' +
+          '</g>' +
+          '<g class="vol-phase" transform="translate(150,109)">' +
+            '<circle r="' + r + '" class="ph-dark"/>' +
+            '<path class="ph-lit" d="' + lit + '"/>' +
+            '<circle r="' + r + '" class="ph-ring"/>' +
+          '</g>' +
+        '</g>';
+      })();
+    if (pageHeader === hero) vol.classList.add('volvelle--hero');
     pageHeader.appendChild(vol);
-    if (!reduceMotion){
-      vol.classList.add('is-live');
-      const hand = vol.querySelector('.vol-hand');
-      let rot = 0, rotT = 0;
-      const gear = () => {
-        rotT = window.scrollY * 0.05;
-        rot += (rotT - rot) * 0.055;
-        hand.setAttribute('transform', 'rotate(' + rot.toFixed(2) + ' 150 150)');
-        requestAnimationFrame(gear);
-      };
-      requestAnimationFrame(gear);
-    }
+    if (!reduceMotion) vol.classList.add('is-live');
+    const hand = vol.querySelector('.vol-hand');
+    const timeText = vol.querySelector('.vol-time');
+    const setClock = () => {
+      const n = new Date();
+      const ang = ((n.getHours() % 12) + n.getMinutes() / 60 + n.getSeconds() / 3600) / 12 * 360;
+      hand.setAttribute('transform', 'rotate(' + ang.toFixed(2) + ' 150 150)');
+      const t = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
+      if (timeText.textContent !== t) timeText.textContent = t;
+    };
+    setClock();
+    setInterval(setClock, 1000);
+  }
+
+  /* ---- VIII. The heliotrope — sun and moon over the archive -----------
+     An engraved sun from a celestial atlas: alternating straight and
+     waved rays, as the old astronomers cut them. An engraved moon with
+     its seas stippled and a dashed halo. Taking the sun brings night
+     down over the archive as an eclipse from that very point; taking
+     the moon returns the daylight the same way.                        */
+  const navWrap = document.querySelector('.site-nav .wrap');
+  if (navWrap){
+    const orb = document.createElement('button');
+    orb.className = 'theme-orb';
+    orb.type = 'button';
+    const straight = [0,45,90,135,180,225,270,315].map(a =>
+      '<line x1="32" y1="11.5" x2="32" y2="16.5" transform="rotate(' + a + ' 32 32)"/>').join('');
+    const waved = [22.5,67.5,112.5,157.5,202.5,247.5,292.5,337.5].map(a =>
+      '<path d="M32,12.5 C33.5,14.3 30.5,15.5 32,17.8" transform="rotate(' + a + ' 32 32)"/>').join('');
+    orb.innerHTML =
+      /* THE SUN — a solar instrument mounted into the binding: beveled
+         gold housing with its four setting screws, guilloché rosette
+         engraved into the burnished core, ray crown, counter-turning
+         corona, orbiting calibration motes — and a specular light that
+         follows the reader's own lamp across the metal.                 */
+      '<svg class="orb-sun" viewBox="0 0 64 64" aria-hidden="true">' +
+        '<defs>' +
+          '<radialGradient id="orb-sunc" cx="38%" cy="34%" r="80%">' +
+            '<stop offset="0%" stop-color="#FAEDB8"/>' +
+            '<stop offset="45%" stop-color="#E3C36B"/>' +
+            '<stop offset="100%" stop-color="#96762B"/>' +
+          '</radialGradient>' +
+          '<linearGradient id="orb-sunrim" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#F0D791"/>' +
+            '<stop offset="50%" stop-color="#8A6B24"/>' +
+            '<stop offset="100%" stop-color="#E7CB7E"/>' +
+          '</linearGradient>' +
+          '<clipPath id="orb-suncl"><circle cx="32" cy="32" r="10.2"/></clipPath>' +
+        '</defs>' +
+        '<circle cx="32" cy="32" r="30" fill="none" stroke="url(#orb-sunrim)" stroke-width="1.6"/>' +
+        '<circle cx="32" cy="32" r="27.8" fill="none" stroke="rgba(138,107,36,.4)" stroke-width=".5"/>' +
+        '<g fill="#8A6B24" opacity=".8">' +
+          '<circle cx="52.3" cy="11.7" r="1"/><circle cx="11.7" cy="11.7" r="1"/>' +
+          '<circle cx="52.3" cy="52.3" r="1"/><circle cx="11.7" cy="52.3" r="1"/>' +
+        '</g>' +
+        /* the artisan's hand: two tiny nicks in the housing, never repeated */
+        '<path d="M49.8,13.9 l1.5,1.1 M13.2,49.6 l1.2,1.4" stroke="rgba(90,70,20,.45)" stroke-width=".5" fill="none"/>' +
+        '<g class="sun-corona" fill="none" stroke="#C9A84C">' +
+          '<circle cx="32" cy="32" r="27" stroke-width=".7" stroke-dasharray="1 4.6" opacity=".5"/>' +
+          '<circle cx="32" cy="32" r="23" stroke-width=".9" stroke-dasharray="8 3.4 2 3.4" opacity=".65"/>' +
+        '</g>' +
+        /* rays with physical depth: each cut ray casts its own fine shadow */
+        '<g class="sun-rays" fill="none" stroke-linecap="round">' +
+          '<g stroke="#6B5316" stroke-width="1.15" opacity=".4" transform="translate(.6,.8)">' +
+            straight + waved +
+          '</g>' +
+          '<g stroke="#B08A3E" stroke-width="1.15">' +
+            straight + waved +
+          '</g>' +
+        '</g>' +
+        '<g class="sun-orbit">' +
+          '<circle cx="32" cy="6" r="1.4" fill="#E7CB7E"/>' +
+          '<circle cx="32" cy="58" r="1" fill="#E7CB7E" opacity=".75"/>' +
+        '</g>' +
+        '<circle cx="32" cy="32" r="10.2" fill="url(#orb-sunc)"/>' +
+        /* brushed gold: fine concentric tool-lines under the engraving */
+        '<g clip-path="url(#orb-suncl)" fill="none">' +
+          '<circle cx="32" cy="32" r="5" stroke="rgba(250,237,184,.16)" stroke-width=".35"/>' +
+          '<circle cx="32" cy="32" r="6.2" stroke="rgba(122,90,28,.16)" stroke-width=".35"/>' +
+          '<circle cx="32" cy="32" r="7.4" stroke="rgba(250,237,184,.13)" stroke-width=".35"/>' +
+          '<circle cx="32" cy="32" r="8.6" stroke="rgba(122,90,28,.14)" stroke-width=".35"/>' +
+          '<circle cx="32" cy="32" r="9.5" stroke="rgba(250,237,184,.11)" stroke-width=".35"/>' +
+        '</g>' +
+        '<g clip-path="url(#orb-suncl)" fill="none" stroke="rgba(122,90,28,.3)" stroke-width=".5">' +
+          [0,45,90,135,180,225,270,315].map(a =>
+            '<circle cx="32" cy="27.5" r="6.5" transform="rotate(' + a + ' 32 32)"/>').join('') +
+        '</g>' +
+        '<ellipse class="orb-spec" cx="28.5" cy="27.5" rx="4.2" ry="3.2" fill="rgba(255,246,215,.5)"/>' +
+        '<ellipse class="orb-spec2" cx="35.5" cy="36.5" rx="2.6" ry="1.8" fill="rgba(255,238,196,.16)"/>' +
+        '<circle cx="32" cy="32" r="10.2" fill="none" stroke="#8A6B24" stroke-width=".8"/>' +
+        '<circle cx="32" cy="32" r="7.8" fill="none" stroke="rgba(138,107,36,.55)" stroke-width=".5" stroke-dasharray="1 2.1"/>' +
+      '</svg>' +
+      /* THE MOON — a pearl-and-silver body set in its own silver mount:
+         sphere-shaded surface, sculpted craters each lit from the same
+         upper-left, its seas, the terminator, a turning halo, breathing
+         gold stars — and the same reader's lamp gliding on the pearl.   */
+      '<svg class="orb-moon" viewBox="0 0 64 64" aria-hidden="true">' +
+        '<defs>' +
+          '<radialGradient id="orb-msurf" cx="38%" cy="32%" r="78%">' +
+            '<stop offset="0%" stop-color="#F1F0EE"/>' +
+            '<stop offset="35%" stop-color="#D7DCE5"/>' +
+            '<stop offset="70%" stop-color="#AEB9C9"/>' +
+            '<stop offset="100%" stop-color="#6E7887"/>' +
+          '</radialGradient>' +
+          '<radialGradient id="orb-mshade" cx="30%" cy="28%" r="85%">' +
+            '<stop offset="58%" stop-color="rgba(10,16,26,0)"/>' +
+            '<stop offset="100%" stop-color="rgba(10,16,26,.5)"/>' +
+          '</radialGradient>' +
+          '<linearGradient id="orb-mrim" x1="0" y1="0" x2="1" y2="1">' +
+            '<stop offset="0%" stop-color="#E4E9F1"/>' +
+            '<stop offset="50%" stop-color="#5E6878"/>' +
+            '<stop offset="100%" stop-color="#C3CCDA"/>' +
+          '</linearGradient>' +
+          '<clipPath id="orb-mooncl"><circle cx="32" cy="32" r="15.2"/></clipPath>' +
+          '<filter id="orb-mrough"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="7"/>' +
+            '<feColorMatrix type="matrix" values="0 0 0 0 0.36 0 0 0 0 0.4 0 0 0 0 0.47 0 0 0 0.4 -0.18"/></filter>' +
+        '</defs>' +
+        '<circle cx="32" cy="32" r="30" fill="none" stroke="url(#orb-mrim)" stroke-width="1.6"/>' +
+        '<circle cx="32" cy="32" r="27.8" fill="none" stroke="rgba(94,104,120,.4)" stroke-width=".5"/>' +
+        '<g fill="#5E6878" opacity=".8">' +
+          '<circle cx="52.3" cy="11.7" r="1"/><circle cx="11.7" cy="11.7" r="1"/>' +
+          '<circle cx="52.3" cy="52.3" r="1"/><circle cx="11.7" cy="52.3" r="1"/>' +
+        '</g>' +
+        '<g class="moon-stars" fill="#E7CB7E">' +
+          '<circle cx="12" cy="17" r="1"/>' +
+          '<circle cx="52" cy="12" r=".8"/>' +
+          '<circle cx="53.5" cy="47" r="1.1"/>' +
+        '</g>' +
+        '<circle class="moon-halo" cx="32" cy="32" r="24" fill="none" stroke="#8E97A6" stroke-width=".6" stroke-dasharray="1 3.6" opacity=".5"/>' +
+        '<circle cx="32" cy="32" r="15.2" fill="url(#orb-msurf)"/>' +
+        /* the surface's fine roughness, ground into the pearl */
+        '<g clip-path="url(#orb-mooncl)"><rect x="16" y="16" width="32" height="32" filter="url(#orb-mrough)" opacity=".35"/></g>' +
+        '<ellipse cx="35.5" cy="27.5" rx="4.4" ry="3.2" fill="rgba(100,110,126,.35)"/>' +
+        '<ellipse cx="27.5" cy="36.5" rx="3.4" ry="2.6" fill="rgba(100,110,126,.28)"/>' +
+        /* sculpted craters: inner shadow toward the light, rim lit away from it */
+        '<circle cx="26.6" cy="26.8" r="2.6" fill="rgba(88,98,114,.5)"/>' +
+        '<ellipse cx="25.9" cy="26.1" rx="2" ry="1.9" fill="rgba(58,67,82,.45)"/>' +
+        '<path d="M28.9,27.9 A2.6,2.6 0 0 1 25.8,29.3" fill="none" stroke="rgba(240,244,250,.5)" stroke-width=".5"/>' +
+        '<circle cx="37.4" cy="35.8" r="1.6" fill="rgba(88,98,114,.45)"/>' +
+        '<path d="M38.8,36.4 A1.6,1.6 0 0 1 36.9,37.2" fill="none" stroke="rgba(240,244,250,.4)" stroke-width=".4"/>' +
+        '<circle cx="31.4" cy="41" r="1.2" fill="rgba(88,98,114,.4)"/>' +
+        '<path d="M32.4,41.5 A1.2,1.2 0 0 1 30.9,42" fill="none" stroke="rgba(240,244,250,.35)" stroke-width=".4"/>' +
+        '<circle cx="38.6" cy="30" r="1" fill="rgba(88,98,114,.38)"/>' +
+        '<ellipse class="orb-spec" cx="27.5" cy="26.5" rx="4.6" ry="3.4" fill="rgba(255,255,250,.35)"/>' +
+        '<ellipse class="orb-spec2" cx="36.5" cy="37.5" rx="2.8" ry="1.9" fill="rgba(214,226,244,.14)"/>' +
+        '<circle cx="32" cy="32" r="15.2" fill="url(#orb-mshade)"/>' +
+        '<circle cx="32" cy="32" r="15.2" fill="none" stroke="#677182" stroke-width=".7"/>' +
+      '</svg>';
+    const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+    const labelOrb = () => {
+      orb.setAttribute('aria-label', isDark() ? 'Return to daylight' : 'Read by night');
+      orb.setAttribute('aria-pressed', isDark() ? 'true' : 'false');
+    };
+    labelOrb();
+    navWrap.insertBefore(orb, navWrap.querySelector('.nav-burger'));
+    const applyTheme = t => {
+      document.documentElement.setAttribute('data-theme', t);
+      try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+      window.dispatchEvent(new CustomEvent('sk-theme'));
+      labelOrb();
+    };
+    /* The celestial event. To night: the sun rises to the centre of the
+       sky, the moon crosses it to totality, the corona flares, and the
+       eclipse's darkness engulfs the page. To day: the moon hangs alone,
+       daylight builds behind its rim, and morning floods outward from it. */
+    let eclipsing = false;
+    orb.addEventListener('click', () => {
+      if (eclipsing) return;
+      const target = isDark() ? 'light' : 'dark';
+      if (reduceMotion){ applyTheme(target); return; }
+      eclipsing = true;
+      const ov = document.createElement('div');
+      ov.className = 'celestial ' + (target === 'dark' ? 'to-night' : 'to-day');
+      ov.innerHTML =
+        '<div class="cel-dusk"></div>' +
+        '<div class="cel-sky"></div>' +
+        (target === 'dark'
+          ? '<svg class="cel-disc" viewBox="0 0 200 200" aria-hidden="true">' +
+              '<circle class="cel-corona" cx="100" cy="100" r="52"/>' +
+              '<circle class="cel-sun" cx="100" cy="100" r="44"/>' +
+              '<circle class="cel-shadow" cx="100" cy="100" r="45"/>' +
+            '</svg>'
+          : '<svg class="cel-disc" viewBox="0 0 200 200" aria-hidden="true">' +
+              '<circle class="cel-dawn" cx="100" cy="100" r="52"/>' +
+              '<circle class="cel-moonb" cx="100" cy="100" r="44"/>' +
+              '<circle cx="86" cy="88" r="7" fill="rgba(88,98,114,.4)"/>' +
+              '<circle cx="112" cy="108" r="4.5" fill="rgba(88,98,114,.35)"/>' +
+            '</svg>');
+      document.body.appendChild(ov);
+      /* the passage: the light of the whole world begins to turn first
+         (twilight), the crossing happens inside it, then the new sky
+         breathes in softly — no hard edges, a day actually ending.     */
+      requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-risen')));
+      setTimeout(() => ov.classList.add('is-total'),     300);  // the crossing / the kindling
+      setTimeout(() => ov.classList.add('is-engulfing'), 1250); // the new sky breathes in
+      setTimeout(() => {                                        // under cover, the world turns
+        applyTheme(target);
+        ov.classList.add('is-clearing');
+      }, 2250);
+      setTimeout(() => { ov.remove(); eclipsing = false; }, 3100);
+    });
+  }
+
+  /* ---- IX. Chrysography — gold written in metal, lit like metal --------
+     Gold leaf is not a colour; it is a surface that answers the light.
+     One slow light source follows the reader's hand across the desk, and
+     every gilt letter on the dark plates catches it as it passes.       */
+  if (finePointer && !reduceMotion){
+    document.documentElement.classList.add('gold-lit');
+    let gx = 0.5, gt = 0.5;
+    window.addEventListener('pointermove', e => {
+      gt = e.clientX / window.innerWidth;
+    }, { passive: true });
+    const shine = () => {
+      gx += (gt - gx) * 0.028;                 // the lamp is heavy; it drifts
+      document.documentElement.style.setProperty('--lx', gx.toFixed(4));
+      requestAnimationFrame(shine);
+    };
+    requestAnimationFrame(shine);
   }
 
 });
