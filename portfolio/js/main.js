@@ -299,7 +299,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const hero = document.querySelector('.hero');
   const orn  = document.querySelector('[data-parallax]');
   const heroTitle = hero ? hero.querySelector('h1') : null;
-  if (hero && !reduceMotion){
+  /* fine pointers only: on touch there is no pointer to breathe with, and
+     a per-frame style write is pure cost — the loop never starts there */
+  if (hero && !reduceMotion && finePointer){
     let tX = 0, tY = 0, cX = 0, cY = 0, sc = window.scrollY;
     if (finePointer){
       window.addEventListener('pointermove', e => {
@@ -472,14 +474,18 @@ document.addEventListener('DOMContentLoaded', () => {
        Math.sin((x + y) * 0.0007 + t * 0.00022 + shift)) * 0.6;
 
     const resize = () => {
-      DPR = Math.min(1.75, window.devicePixelRatio || 1);
       W = window.innerWidth; H = window.innerHeight;
+      /* the hand-held edition paints with a lighter brush: lower pixel
+         density and fewer strokes keep the phone's scroll perfectly fluid
+         while the painting reads identically at that size */
+      const compact = W < 700;
+      DPR = Math.min(compact ? 1.25 : 1.75, window.devicePixelRatio || 1);
       canvas.width = W * DPR; canvas.height = H * DPR;
       canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       paintGround();
       ctx.drawImage(ground, 0, 0, W, H);
-      const target = Math.min(560, Math.round(W * H / 2600));
+      const target = Math.min(compact ? 300 : 560, Math.round(W * H / (compact ? 3400 : 2600)));
       particles = [];
       for (let i = 0; i < target; i++) particles.push(spawn());
     };
