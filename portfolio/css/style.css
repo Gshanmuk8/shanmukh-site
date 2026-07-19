@@ -1033,6 +1033,9 @@ p{ text-wrap:pretty; }
 @media (max-width: 860px){
   .nav-links{ display:none; }
   .nav-burger{ display:block; }
+  /* the instrument scales to the hand: smaller, clustered with the burger */
+  .theme-orb{ width:46px; height:46px; margin-left:auto; }
+  .theme-orb::after{ display:none; }
   .prose, .essay, .dossier{ grid-template-columns:1fr; }
   .prose-side{ position:static; }
   .prose-side h2{ max-width:none; }
@@ -1048,6 +1051,15 @@ p{ text-wrap:pretty; }
   .index-item::before{ left:0; }
   .footer-top{ grid-template-columns:1fr; }
   .hero{ padding-top:130px; }
+}
+
+/* ---- The hand-held edition — phones get the same art, lighter frames ---
+   Blur-transitions and the craquelure filter are the two costly paints;
+   at phone size neither is perceptible, so both are lifted for a fully
+   fluid scroll. Translate-and-fade reveals remain.                        */
+@media (max-width: 700px){
+  [data-reveal]{ filter:none !important; }
+  .hero::after, .section--deep::after{ display:none; }
 }
 
 /* =========================================================================
