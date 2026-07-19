@@ -240,41 +240,69 @@ document.addEventListener('DOMContentLoaded', () => {
     requestAnimationFrame(depthLoop);
   }
 
-  /* ---- III. The frontispiece — a slow marbled pigment field ----------- */
-  /* Refined: fewer, longer, silkier strokes on a broad, calm current.     */
-  if (hero && !reduceMotion){
+  /* ---- III. The living volume — a site-wide marbled pigment field ------ */
+  /* The whole codex breathes: a slow wet-pigment current drifts behind      */
+  /* every page, tinted toward the pigment of the chapter being read, and    */
+  /* stirred a little as the reader turns down through the volume. A central */
+  /* celadon veil (in CSS) calms the paint behind the text, leaving the      */
+  /* margins illuminated — the logic of a real illuminated manuscript.       */
+  if (!reduceMotion){
     const canvas = document.createElement('canvas');
-    canvas.className = 'pigment-field';
+    canvas.id = 'pigment-field';
     canvas.setAttribute('aria-hidden', 'true');
-    hero.insertBefore(canvas, hero.firstChild);
-    hero.classList.add('has-canvas');
+    document.body.prepend(canvas);
+
+    const veil = document.createElement('div');
+    veil.className = 'field-veil';
+    veil.setAttribute('aria-hidden', 'true');
+    document.body.prepend(veil);
+
     const ctx = canvas.getContext('2d');
 
-    // a composed, harmonised selection of the cabinet
-    const PIGMENTS = [
-      [31, 58, 147],   // oltremare / lapis
-      [26, 47, 116],   // deep lapis
-      [30, 107, 87],   // malachite
-      [78, 107, 93],   // verdigris
-      [151, 36, 63],   // cochineal (used sparingly)
-      [92, 42, 80]     // Tyrian purple (used sparingly)
-    ];
+    // the European pigment cabinet — orchestrated, never scattered
+    const CABINET = {
+      lapis:     [31, 58, 147],   // IT · oltremare
+      deeplapis: [26, 47, 116],
+      malachite: [30, 107, 87],   // RU · malachite
+      verdigris: [78, 107, 93],
+      cochineal: [151, 36, 63],   // ES · carmín
+      tyrian:    [92, 42, 80],    // imperial purple
+      ochre:     [178, 122, 40],  // ES · Spanish ochre
+      vermilion: [198, 54, 43]    // RU/IT · cinnabar
+    };
     const GOLD = [176, 138, 62];
-    const VEIL = 'rgba(207,230,221,0.013)';
+    const VEIL = 'rgba(207,230,221,0.015)';
+
+    // each chapter is illuminated in its own pigment; the first is dominant
+    const CHAPTER = {
+      'index.html':    ['lapis', 'deeplapis', 'malachite', 'ochre', 'tyrian'],
+      'about.html':    ['malachite', 'verdigris', 'lapis', 'ochre'],
+      'projects.html': ['lapis', 'vermilion', 'malachite', 'ochre', 'tyrian'],
+      'blog.html':     ['ochre', 'malachite', 'lapis', 'cochineal'],
+      'contact.html':  ['cochineal', 'tyrian', 'vermilion', 'lapis']
+    };
+    const keys = CHAPTER[location.pathname.split('/').pop()] || CHAPTER['index.html'];
+    // weight the chapter's own pigment most heavily, the rest as accents
+    const POOL = [];
+    keys.forEach((k, i) => {
+      const n = i === 0 ? 5 : (i === 1 ? 3 : 2);
+      for (let j = 0; j < n; j++) POOL.push(CABINET[k]);
+    });
 
     let W = 0, H = 0, DPR = 1, particles = [];
+    let shift = 0, targetShift = 0;              // scroll gently stirs the current
     const mouse = { x: -9999, y: -9999, active: false };
 
     const spawn = (x, y) => {
-      const gold = Math.random() < 0.14;
-      const col = gold ? GOLD : PIGMENTS[(Math.random() * PIGMENTS.length) | 0];
+      const gold = Math.random() < 0.12;
+      const col = gold ? GOLD : POOL[(Math.random() * POOL.length) | 0];
       return {
         x: x == null ? Math.random() * W : x,
         y: y == null ? Math.random() * H : y,
         px: x || 0, py: y || 0,
-        life: 260 + Math.random() * 420,
-        w: gold ? 0.5 + Math.random() * 0.7 : 0.7 + Math.random() * 1.4,
-        a: gold ? 0.07 : 0.04,
+        life: 300 + Math.random() * 460,
+        w: gold ? 0.5 + Math.random() * 0.7 : 0.7 + Math.random() * 1.5,
+        a: gold ? 0.06 : 0.038,
         col
       };
     };
@@ -283,22 +311,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const flow = (x, y, t) =>
       (Math.sin(x * 0.0016 + t * 0.00018) +
        Math.cos(y * 0.0018 - t * 0.00015) +
-       Math.sin((x + y) * 0.0009 + t * 0.00022)) * 0.85;
+       Math.sin((x + y) * 0.0009 + t * 0.00022 + shift)) * 0.85;
 
     const resize = () => {
       DPR = Math.min(2, window.devicePixelRatio || 1);
-      W = hero.clientWidth; H = hero.clientHeight;
+      W = window.innerWidth; H = window.innerHeight;
       canvas.width = W * DPR; canvas.height = H * DPR;
       canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       ctx.fillStyle = '#CFE6DD';
       ctx.fillRect(0, 0, W, H);
-      const target = Math.min(820, Math.round(W * H / 1700));
+      const target = Math.min(760, Math.round(W * H / 2100));
       particles = [];
       for (let i = 0; i < target; i++) particles.push(spawn());
     };
 
     const frame = ts => {
+      shift += (targetShift - shift) * 0.04;
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = VEIL;
       ctx.fillRect(0, 0, W, H);
@@ -309,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let vx = Math.cos(ang) * 0.62, vy = Math.sin(ang) * 0.62;
         if (mouse.active){
           const dx = p.x - mouse.x, dy = p.y - mouse.y;
-          const R = 160, d2 = dx * dx + dy * dy;
+          const R = 150, d2 = dx * dx + dy * dy;
           if (d2 < R * R){
             const d = Math.sqrt(d2) || 1, f = 1 - d / R;
             vx += (-dy / d) * f * 2.4 + (dx / d) * f * 0.8;   // gentle swirl
@@ -327,14 +356,11 @@ document.addEventListener('DOMContentLoaded', () => {
       requestAnimationFrame(frame);
     };
 
-    const track = e => {
-      const r = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - r.left;
-      mouse.y = e.clientY - r.top;
-      mouse.active = e.clientY >= r.top && e.clientY <= r.bottom;
-    };
+    // the field is fixed to the viewport, so pointer coords map directly
+    const track = e => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true; };
     if (finePointer) window.addEventListener('pointermove', track, { passive: true });
     window.addEventListener('blur', () => { mouse.active = false; });
+    window.addEventListener('scroll', () => { targetShift = window.scrollY * 0.0006; }, { passive: true });
 
     resize();
     window.addEventListener('resize', resize);
