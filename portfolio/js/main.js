@@ -9,6 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer  = matchMedia('(pointer: fine)').matches;
 
+  /* ---- Skip link — keyboard readers go straight to the text block ---- */
+  const landmark = document.querySelector('main') || document.querySelector('.hero');
+  if (landmark){
+    if (!landmark.id) landmark.id = 'reading';
+    landmark.setAttribute('tabindex', '-1');
+    const skip = document.createElement('a');
+    skip.className = 'skip-link';
+    skip.href = '#' + landmark.id;
+    skip.textContent = 'Begin reading →';
+    document.body.prepend(skip);
+  }
+
   /* ---- Nav scroll state ---- */
   const nav = document.querySelector('.site-nav');
   if (nav){
@@ -114,6 +126,43 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
     placardTargets.forEach(t => pio.observe(t.el));
+  }
+
+  /* ---- Catchword — the binder's cue at the foot of the gathering -------
+     Real manuscripts printed the first word of the NEXT page at the foot
+     of each leaf so the binder sewed the volume in order. Here it names
+     the next chapter, with a quill swash, and turns the page when taken. */
+  const GATHERINGS = ['index.html', 'about.html', 'projects.html', 'blog.html', 'contact.html'];
+  const GATHERING_TITLE = {
+    'index.html': 'Frontispiece',
+    'about.html': 'The Author',
+    'projects.html': 'The Plates',
+    'blog.html': 'Fields of Inquiry',
+    'contact.html': 'Correspondence'
+  };
+  const siteFooter = document.querySelector('.site-footer');
+  if (siteFooter){
+    const at = Math.max(0, GATHERINGS.indexOf(path));
+    const nextHref = GATHERINGS[(at + 1) % GATHERINGS.length];
+    const row = document.createElement('div');
+    row.className = 'catchword-row';
+    row.innerHTML =
+      '<div class="wrap"><a class="catchword" href="' + nextHref + '">' +
+        '<small>catchword · next gathering</small>' +
+        '<em>' + GATHERING_TITLE[nextHref] + '</em>' +
+        '<svg viewBox="0 0 120 26" aria-hidden="true">' +
+          '<path d="M3,20 C30,6 52,26 78,15 C94,8 102,17 117,9" pathLength="1"/>' +
+        '</svg>' +
+      '</a></div>';
+    siteFooter.insertAdjacentElement('beforebegin', row);
+    if ('IntersectionObserver' in window){
+      const cio = new IntersectionObserver(es => {
+        es.forEach(en => { if (en.isIntersecting){ row.classList.add('is-shown'); cio.disconnect(); } });
+      }, { threshold: 0.4 });
+      cio.observe(row);
+    } else {
+      row.classList.add('is-shown');
+    }
   }
 
   /* ---- Turning the leaf — a sheet is drawn over the page between chapters ---- */
@@ -291,11 +340,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let W = 0, H = 0, DPR = 1, particles = [];
     let shift = 0, targetShift = 0;              // scroll gently stirs the current
+    let dip = null;                              // the pigment of the plate being read
     const mouse = { x: -9999, y: -9999, active: false };
 
     const spawn = (x, y) => {
       const gold = Math.random() < 0.12;
-      const col = gold ? GOLD : POOL[(Math.random() * POOL.length) | 0];
+      const col = gold ? GOLD
+        : (dip && Math.random() < 0.45) ? dip
+        : POOL[(Math.random() * POOL.length) | 0];
       return {
         x: x == null ? Math.random() * W : x,
         y: y == null ? Math.random() * H : y,
@@ -362,6 +414,35 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('blur', () => { mouse.active = false; });
     window.addEventListener('scroll', () => { targetShift = window.scrollY * 0.0006; }, { passive: true });
 
+    /* The dip — as the reader settles on a folio, essay or section, freshly
+       spawned strokes take that plate's own pigment, so the field slowly
+       re-inks itself in the colour of what is being read. The pigment is
+       sampled from the CSS itself (--pig, or the numeral's painted colour). */
+    const parseCol = s => {
+      if (!s) return null;
+      s = s.trim();
+      let m = s.match(/^#([0-9a-f]{6})$/i);
+      if (m) return [parseInt(m[1].slice(0,2),16), parseInt(m[1].slice(2,4),16), parseInt(m[1].slice(4,6),16)];
+      m = s.match(/^rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+      return m ? [+m[1], +m[2], +m[3]] : null;
+    };
+    const pigOf = el => {
+      const own = parseCol(getComputedStyle(el).getPropertyValue('--pig'));
+      if (own) return own;
+      const n = el.querySelector('.folio-no, .essay-no, .label .num');
+      return n ? parseCol(getComputedStyle(n).color) : null;
+    };
+    if ('IntersectionObserver' in window){
+      const dio = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const c = pigOf(entry.target);
+          if (c) dip = c;
+        });
+      }, { rootMargin: '-42% 0px -42% 0px', threshold: 0 });
+      document.querySelectorAll('.folio, .essay, section').forEach(el => dio.observe(el));
+    }
+
     resize();
     window.addEventListener('resize', resize);
     requestAnimationFrame(frame);
@@ -376,6 +457,149 @@ document.addEventListener('DOMContentLoaded', () => {
         f.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
       }, { passive: true });
     });
+  }
+
+  /* =======================================================================
+     THE GILDED APPARATUS
+     The working instruments a true codex carried: the scribe's ruling
+     (canon), the illuminator's border vines (rinceaux), the astronomer's
+     paper wheel (volvelle). Artwork with a job, never decoration.
+     ===================================================================== */
+  const NS = 'http://www.w3.org/2000/svg';
+
+  /* a section's own painted pigment, sampled from the CSS itself */
+  const samplePigment = el => {
+    const v = getComputedStyle(el).getPropertyValue('--pig').trim();
+    if (v) return v;
+    const n = el.querySelector('.folio-no, .essay-no, .label .num');
+    return n ? getComputedStyle(n).color : '';
+  };
+
+  /* ---- V. The canon — sinopia ruling beneath the frontispiece ---------
+     Before an illuminator painted, the scribe ruled the sheet in red
+     chalk: diagonals, gable, text block, compass circle (the canon of
+     page construction). It draws itself once, then sinks into the paper
+     — the engineering left faintly visible beneath the finished art.   */
+  if (hero){
+    const canon = document.createElementNS(NS, 'svg');
+    canon.setAttribute('class', 'canon');
+    canon.setAttribute('viewBox', '0 0 1200 760');
+    canon.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    canon.setAttribute('aria-hidden', 'true');
+    [
+      'M0,0 L1200,760', 'M1200,0 L0,760',                       // diagonals
+      'M0,760 L600,0', 'M1200,760 L600,0',                      // the gable
+      'M133,84 H1067 V676 H133 Z',                              // text block
+      'M600,380 m-172,0 a172,172 0 1,0 344,0 a172,172 0 1,0 -344,0' // compass
+    ].forEach((d, i) => {
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('pathLength', '1');
+      p.style.transitionDelay = (0.3 + i * 0.26) + 's';
+      canon.appendChild(p);
+    });
+    hero.appendChild(canon);
+    if (reduceMotion){
+      canon.classList.add('is-drawn', 'is-resting');
+    } else {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        canon.classList.add('is-drawn');
+        setTimeout(() => canon.classList.add('is-resting'), 3600);
+      }));
+    }
+  }
+
+  /* ---- VI. Rinceaux — the illuminator's vine climbs the margin --------
+     Border vines were the illuminator's signature work. One climbs the
+     outer margin of each chapter section, inked in that section's own
+     pigment, its berries in gold, drawing itself as the section is read. */
+  const VINE =
+    '<svg class="margin-vine" viewBox="0 0 64 480" aria-hidden="true">' +
+      '<defs><path id="mv-leaf" d="M0,0 C7,-9 17,-13 27,-12 C19,-4 14,4 11,12 C6,7 3,4 0,0 Z"/></defs>' +
+      '<path class="mv-stem" pathLength="1" d="M34,10 C30,2 24,-2 17,0 M34,10 C14,68 54,118 34,178 C14,238 54,288 34,348 C20,394 46,432 34,474"/>' +
+      '<use href="#mv-leaf" transform="translate(24,54) scale(-1,1) rotate(12)"/>' +
+      '<use href="#mv-leaf" transform="translate(45,110) rotate(6)"/>' +
+      '<use href="#mv-leaf" transform="translate(23,222) scale(-1,1) rotate(-4)"/>' +
+      '<use href="#mv-leaf" transform="translate(45,280) rotate(14)"/>' +
+      '<use href="#mv-leaf" transform="translate(26,400) scale(-1,1) rotate(8)"/>' +
+      '<use href="#mv-leaf" transform="translate(41,438) rotate(2)"/>' +
+      '<circle class="mv-berry" cx="34" cy="178" r="2.8"/>' +
+      '<circle class="mv-berry" cx="34" cy="348" r="2.8"/>' +
+      '<circle class="mv-berry" cx="34" cy="474" r="3.2"/>' +
+    '</svg>';
+  const vines = [];
+  document.querySelectorAll('.section').forEach(sec => {
+    const wrap = sec.querySelector(':scope > .wrap');
+    if (!wrap) return;
+    const holder = document.createElement('div');
+    holder.innerHTML = VINE;
+    const svg = holder.firstElementChild;
+    const pig = samplePigment(sec);
+    /* on dark plates the CSS gilt treatment governs; elsewhere the vine
+       takes the section's own sampled pigment */
+    if (pig && !sec.classList.contains('plate')) svg.style.setProperty('--vine', pig);
+    wrap.prepend(svg);
+    vines.push(svg);
+  });
+  if (vines.length){
+    if (reduceMotion || !('IntersectionObserver' in window)){
+      vines.forEach(v => v.classList.add('is-drawn'));
+    } else {
+      const vio = new IntersectionObserver(es => {
+        es.forEach(en => {
+          if (en.isIntersecting){ en.target.classList.add('is-drawn'); vio.unobserve(en.target); }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -10% 0px' });
+      vines.forEach(v => vio.observe(v));
+    }
+  }
+
+  /* ---- VII. The volvelle — the codex's working paper instrument -------
+     Medieval books carried volvelles: layered rotating wheels for
+     computing stars and calendars. One is engraved into the header of
+     each interior chapter; its rings turn at their own slow rates and
+     the inner wheel is geared to the reader's scroll.                  */
+  const pageHeader = document.querySelector('.page-header');
+  if (pageHeader){
+    const vol = document.createElementNS(NS, 'svg');
+    vol.setAttribute('class', 'volvelle');
+    vol.setAttribute('viewBox', '0 0 300 300');
+    vol.setAttribute('aria-hidden', 'true');
+    vol.innerHTML =
+      '<defs><path id="vol-arc" d="M150,150 m-116,0 a116,116 0 1,1 232,0 a116,116 0 1,1 -232,0"/></defs>' +
+      '<g class="vol-outer">' +
+        '<circle cx="150" cy="150" r="128" class="vol-line"/>' +
+        '<circle cx="150" cy="150" r="103" class="vol-ticks"/>' +
+        '<text class="vol-text" font-size="10.5" letter-spacing="2.6">' +
+          '<textPath href="#vol-arc">ARS · INGENIVM · SCIENTIA · MMXXVI · ARS · INGENIVM · SCIENTIA ·</textPath>' +
+        '</text>' +
+        '<rect class="vol-stud" x="146" y="18" width="8" height="8" transform="rotate(45 150 22)"/>' +
+        '<rect class="vol-stud" x="146" y="274" width="8" height="8" transform="rotate(45 150 278)"/>' +
+      '</g>' +
+      '<g class="vol-mid">' +
+        '<circle cx="150" cy="150" r="88" class="vol-line"/>' +
+        '<circle cx="150" cy="150" r="80" class="vol-ticks vol-ticks-fine"/>' +
+        '<rect class="vol-stud" x="146" y="58" width="8" height="8" transform="rotate(45 150 62)"/>' +
+      '</g>' +
+      '<g class="vol-hand">' +
+        '<path class="vol-line" d="M150,64 L150,236"/>' +
+        '<path class="vol-tip" d="M150,56 L155,66 L150,76 L145,66 Z"/>' +
+        '<circle cx="150" cy="150" r="4.5" class="vol-axis"/>' +
+      '</g>' +
+      '<circle cx="150" cy="150" r="52" class="vol-line"/>';
+    pageHeader.appendChild(vol);
+    if (!reduceMotion){
+      vol.classList.add('is-live');
+      const hand = vol.querySelector('.vol-hand');
+      let rot = 0, rotT = 0;
+      const gear = () => {
+        rotT = window.scrollY * 0.05;
+        rot += (rotT - rot) * 0.055;
+        hand.setAttribute('transform', 'rotate(' + rot.toFixed(2) + ' 150 150)');
+        requestAnimationFrame(gear);
+      };
+      requestAnimationFrame(gear);
+    }
   }
 
 });
