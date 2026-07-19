@@ -149,6 +149,33 @@ document.addEventListener('DOMContentLoaded', () => {
     el.textContent = new Date().getFullYear();
   });
 
+  /* ---- Correspondence — make "email" reliably open a composer ----------
+     mailto: only fires if the visitor has a desktop mail client set as the
+     default handler; on many desktops that is unset, so the click does
+     nothing. On desktop we open Gmail's web compose in a new tab instead;
+     on touch devices we leave the native mailto: alone (it opens the app). */
+  const coarsePointer = matchMedia('(pointer: coarse)').matches;
+  if (!coarsePointer){
+    document.querySelectorAll('a[href^="mailto:"]').forEach(a => {
+      a.addEventListener('click', e => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        const raw = a.getAttribute('href').slice('mailto:'.length);
+        const [addr, query = ''] = raw.split('?');
+        const params = new URLSearchParams(query);
+        const gmail = new URL('https://mail.google.com/mail/');
+        gmail.searchParams.set('view', 'cm');
+        gmail.searchParams.set('fs', '1');
+        if (addr) gmail.searchParams.set('to', decodeURIComponent(addr));
+        if (params.get('subject')) gmail.searchParams.set('su', params.get('subject'));
+        if (params.get('body'))    gmail.searchParams.set('body', params.get('body'));
+        if (params.get('cc'))      gmail.searchParams.set('cc', params.get('cc'));
+        if (params.get('bcc'))     gmail.searchParams.set('bcc', params.get('bcc'));
+        e.preventDefault();
+        window.open(gmail.toString(), '_blank', 'noopener');
+      });
+    });
+  }
+
   /* =======================================================================
      THE LIVING VOLUME
      ===================================================================== */
