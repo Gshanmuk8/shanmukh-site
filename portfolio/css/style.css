@@ -1782,6 +1782,28 @@ html[data-theme='dark'] .page-leaf::before{
   [data-reveal]{ filter:none !important; }
   .hero::after, .section--deep::after{ display:none; }
   .hero-orn{ display:none; }
+  /* blend-modes on fixed full-screen layers force per-frame compositing
+     on phone GPUs — the grain keeps its look through plain opacity */
+  body::before{
+    mix-blend-mode:normal; opacity:.04;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");
+    background-size:300px 300px;
+  }
+  /* the vignette's huge blurred inset shadow is repainted on scroll —
+     phones read the same atmosphere from the veil gradient alone */
+  .field-veil, html[data-theme='dark'] .field-veil{ box-shadow:none; }
+  /* infinite repaint animations rest on the hand-held edition */
+  body::after{ animation:none; }
+  .plate::after{ animation:none; box-shadow:inset 0 0 0 1px rgba(214,180,94,.16); }
+  .hero-kicker .pulse{ animation:none; }
+  .press-stamp .stamp-ring{ animation:none; }
+  .orb-moon .moon-halo{ animation:none; }
+  .volvelle .vol-outer, .volvelle .vol-mid{ animation:none !important; }
+}
+/* the scrolled nav trades backdrop sampling for a settled solid tone */
+@media (max-width: 700px){
+  .site-nav.is-scrolled{ backdrop-filter:none; background:rgba(207,230,221,.95); }
+  html[data-theme='dark'] .site-nav.is-scrolled{ backdrop-filter:none; background:rgba(13,24,38,.95); }
 }
 @media (max-width: 900px){
   /* fixed-attachment gradients are a known phone scroll-jank source */

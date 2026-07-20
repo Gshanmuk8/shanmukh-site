@@ -478,28 +478,42 @@ document.addEventListener('DOMContentLoaded', () => {
       /* the hand-held edition paints with a lighter brush: lower pixel
          density and fewer strokes keep the phone's scroll perfectly fluid
          while the painting reads identically at that size */
-      const compact = W < 700;
-      DPR = Math.min(compact ? 1.25 : 1.75, window.devicePixelRatio || 1);
+      const compact = coarsePointer || W < 700;
+      DPR = Math.min(compact ? 1 : 1.75, window.devicePixelRatio || 1);
       canvas.width = W * DPR; canvas.height = H * DPR;
       canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       paintGround();
       ctx.drawImage(ground, 0, 0, W, H);
-      const target = Math.min(compact ? 300 : 560, Math.round(W * H / (compact ? 3400 : 2600)));
+      const target = Math.min(compact ? 200 : 560, Math.round(W * H / (compact ? 4200 : 2600)));
       particles = [];
       for (let i = 0; i < target; i++) particles.push(spawn());
     };
 
-    let tick = 0;
+    /* On touch devices the painting yields entirely: it rests while the
+       reader scrolls (the scroll owns every frame), and paints at half
+       rate between gestures. Nothing competes with the thumb. */
+    let scrolling = false, scrollSettle = 0;
+    if (coarsePointer){
+      window.addEventListener('scroll', () => {
+        scrolling = true;
+        clearTimeout(scrollSettle);
+        scrollSettle = setTimeout(() => { scrolling = false; }, 140);
+      }, { passive: true });
+    }
+    let tick = 0, beat = 0;
     const frame = ts => {
+      if (coarsePointer){
+        if (scrolling || (beat++ & 1)){ requestAnimationFrame(frame); return; }
+      }
       shift += (targetShift - shift) * 0.04;
       ctx.globalCompositeOperation = 'source-over';
       /* the veil: trails settle back into the underpainting, not into
          flatness. Blitting the ground is the single costliest op of the
-         frame, so it runs every second frame at doubled strength — the
-         same fade rate for half the compositing work. */
+         frame, so it runs every second painted frame at doubled strength
+         — the same fade rate for half the compositing work. */
       if ((tick++ & 1) === 0){
-        ctx.globalAlpha = 0.038;
+        ctx.globalAlpha = coarsePointer ? 0.07 : 0.038;
         ctx.drawImage(ground, 0, 0, W, H);
         ctx.globalAlpha = 1;
       }
@@ -754,7 +768,9 @@ document.addEventListener('DOMContentLoaded', () => {
       })();
     if (pageHeader === hero) vol.classList.add('volvelle--hero');
     pageHeader.appendChild(vol);
-    if (!reduceMotion) vol.classList.add('is-live');
+    /* the rings idle-turn only where the frame budget is generous; on
+       touch the instrument holds still and simply keeps the hour */
+    if (!reduceMotion && !coarsePointer) vol.classList.add('is-live');
     const hand = vol.querySelector('.vol-hand');
     const timeText = vol.querySelector('.vol-time');
     const setClock = () => {
