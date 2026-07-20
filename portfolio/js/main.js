@@ -490,13 +490,19 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let i = 0; i < target; i++) particles.push(spawn());
     };
 
+    let tick = 0;
     const frame = ts => {
       shift += (targetShift - shift) * 0.04;
       ctx.globalCompositeOperation = 'source-over';
-      /* the veil: trails settle back into the underpainting, not into flatness */
-      ctx.globalAlpha = 0.02;
-      ctx.drawImage(ground, 0, 0, W, H);
-      ctx.globalAlpha = 1;
+      /* the veil: trails settle back into the underpainting, not into
+         flatness. Blitting the ground is the single costliest op of the
+         frame, so it runs every second frame at doubled strength — the
+         same fade rate for half the compositing work. */
+      if ((tick++ & 1) === 0){
+        ctx.globalAlpha = 0.038;
+        ctx.drawImage(ground, 0, 0, W, H);
+        ctx.globalAlpha = 1;
+      }
       ctx.lineCap = 'round';
       for (const p of particles){
         p.px = p.x; p.py = p.y;
@@ -962,8 +968,13 @@ document.addEventListener('DOMContentLoaded', () => {
       gt = e.clientX / window.innerWidth;
     }, { passive: true });
     const shine = () => {
-      gx += (gt - gx) * 0.028;                 // the lamp is heavy; it drifts
-      document.documentElement.style.setProperty('--lx', gx.toFixed(4));
+      const d = gt - gx;
+      /* the lamp is heavy; it drifts — and once it has settled, it stops
+         touching the page entirely (style writes only while moving) */
+      if (Math.abs(d) > 0.0008){
+        gx += d * 0.028;
+        document.documentElement.style.setProperty('--lx', gx.toFixed(4));
+      }
       requestAnimationFrame(shine);
     };
     requestAnimationFrame(shine);

@@ -1804,6 +1804,8 @@ html[data-theme='dark'] .page-leaf::before{
     transform:none;
     opacity:.85;
   }
+  /* at hand size the dial shrinks; the hour must not shrink with it */
+  .volvelle .vol-time{ font-size:24px; }
   .crumb{ max-width:calc(100% - clamp(104px, 28vw, 150px)); }
 }
 @media (max-width: 999px){
