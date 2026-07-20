@@ -1805,6 +1805,35 @@ html[data-theme='dark'] .page-leaf::before{
   .site-nav.is-scrolled{ backdrop-filter:none; background:rgba(207,230,221,.95); }
   html[data-theme='dark'] .site-nav.is-scrolled{ backdrop-filter:none; background:rgba(13,24,38,.95); }
 }
+
+/* ---- One layer per pixel ------------------------------------------------
+   Phone GPUs are fill-rate bound: stacked full-screen fixed layers mean
+   every pixel is drawn many times per scrolled frame. On phones the
+   decorative fixed sheets retire entirely — the painting and the central
+   veil alone carry the atmosphere — and nothing stays promoted to its
+   own GPU layer between animations.                                       */
+@media (max-width: 700px){
+  body::before, .field-veil::before, .field-veil::after{ display:none; }
+  /* the header bloom trades its live 70px blur for a settled wash */
+  .page-header::before{
+    filter:none;
+    background:radial-gradient(60% 60% at 55% 40%,
+      rgba(31,58,147,.14), rgba(178,122,40,.07) 52%, transparent 78%);
+  }
+  /* reveals become pure fades: no transform, no permanent layer promotion */
+  [data-reveal]{
+    transform:none !important;
+    will-change:auto !important;
+    transition:opacity .45s var(--ease) !important;
+  }
+  [data-reveal="ink"]{ clip-path:none !important; }
+  /* long chapters render only what approaches the eye */
+  .folio, .essay, .prose, .dossier{
+    content-visibility:auto;
+    contain-intrinsic-size:auto 720px;
+  }
+  .bookmark-ribbon{ box-shadow:none; }
+}
 @media (max-width: 900px){
   /* fixed-attachment gradients are a known phone scroll-jank source */
   body, html[data-theme='dark'] body{ background-attachment:scroll; }
