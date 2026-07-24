@@ -226,6 +226,42 @@
         </div>
       </aside>
     </div>
+
+    <!-- ---- How to use it ---- -->
+    <div class="howto" data-reveal>
+      <h5>How to use it</h5>
+      <ol class="howto-list">
+        <li>
+          <p>Install Node.js 22.13 or newer, then check the version.</p>
+          <code>node --version</code>
+        </li>
+        <li>
+          <p>Install LODESTAR.</p>
+          <code>npm install -g @gshanmukha/lodestar</code>
+        </li>
+        <li>
+          <p>Check it installed properly.</p>
+          <code>lodestar --version</code>
+          <code>lodestar status</code>
+        </li>
+        <li>
+          <p>Inside your project folder, set up recording. You only do this once per project.</p>
+          <code>lodestar init</code>
+        </li>
+        <li>
+          <p>Launch your AI assistant through LODESTAR instead of on its own, then just work like you normally would.</p>
+          <code>lodestar claude</code>
+          <code>lodestar run codex</code>
+          <code>lodestar run aider</code>
+          <code>lodestar run &lt;any-command&gt;</code>
+          <span class="howto-note">— use whichever matches your agent.</span>
+        </li>
+        <li>
+          <p>When the session's done, see what the AI actually did.</p>
+          <code>lodestar report</code>
+        </li>
+      </ol>
+    </div>
   </article>
 
 </div>

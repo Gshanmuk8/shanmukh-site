@@ -764,6 +764,47 @@ p{ text-wrap:pretty; }
 }
 .folio-links{ display:flex; flex-direction:column; gap:14px; align-items:flex-start; }
 
+/* ---- How to use it — a short recipe card, numbered in the plate's own
+   pigment, commands set in type as they'd be typed ---------------------- */
+.howto{
+  margin-top:44px; padding-top:36px; max-width:76ch;
+  border-top:1px solid var(--line);
+}
+.howto h5{
+  font-family:var(--f-caps); font-size:.7rem; font-weight:400;
+  letter-spacing:.26em; text-transform:uppercase; color:var(--ink-faint);
+  margin-bottom:26px;
+}
+.howto-list{ counter-reset:howto; list-style:none; display:grid; gap:20px; }
+.howto-list li{
+  counter-increment:howto; position:relative;
+  padding-left:38px; min-height:26px;
+}
+.howto-list li::before{
+  content:counter(howto);
+  position:absolute; left:0; top:0;
+  width:24px; height:24px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--f-mono); font-size:.72rem;
+  color:var(--pig, var(--lapis));
+  border:1px solid currentColor; border-radius:50%;
+}
+.howto-list p{ margin-bottom:9px; color:var(--ink-soft); font-size:1rem; line-height:1.6; }
+.howto-list code{
+  display:inline-block;
+  font-family:var(--f-mono); font-size:.86rem;
+  color:var(--ink);
+  background:var(--line-soft);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:6px 11px;
+  margin:3px 8px 0 0;
+}
+.howto-note{
+  display:inline-block; margin-top:6px;
+  font-size:.86rem; font-style:italic; color:var(--ink-faint);
+}
+
 /* =========================================================================
    BLOG — fields of inquiry, each essay its own pigment
    ========================================================================= */
