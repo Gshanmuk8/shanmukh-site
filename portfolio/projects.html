@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Selected projects by Shanmukh Sriram — FitAI, SkillMesh, LocalLens, MarketMind, and a Smart India Hackathon tourist-safety system.">
+<meta name="description" content="Selected projects by Shanmukh Sriram — FitAI, SkillMesh, LocalLens, San-Loc, MarketMind, and LODESTAR, an independent evidence recorder for AI coding sessions.">
 <title>Projects — Shanmukh Sriram</title>
 <meta name="theme-color" content="#CFE6DD">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23CFE6DD'/%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%239C7C2E' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23C6362B' stroke-width='1'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-style='italic' font-size='32' text-anchor='middle' fill='%231F3A93'%3ES%3C/text%3E%3C/svg%3E">
@@ -43,7 +43,7 @@
   <div class="wrap">
     <div class="crumb" data-reveal>Collected works <span>·</span> Ch. II — The plates</div>
     <h1 data-reveal>The <em>plates.</em></h1>
-    <p class="lede" data-reveal>Five projects, each one starting from a real problem instead of a technology. For each, I've written the problem, my approach, and what building it taught me — with source code and live demos throughout.</p>
+    <p class="lede" data-reveal>Six projects, each one starting from a real problem instead of a technology. For each, I've written the problem, my approach, and what building it taught me — with source code and live demos throughout.</p>
   </div>
 </header>
 
@@ -194,6 +194,35 @@
         <div class="folio-links">
           <a href="https://market-mind-tau.vercel.app/" target="_blank" rel="noopener" class="tlink">Live demo ↗</a>
           <a href="https://github.com/Gshanmuk8/MarketMind" target="_blank" rel="noopener" class="tlink">GitHub repository ↗</a>
+        </div>
+      </aside>
+    </div>
+  </article>
+
+  <!-- ============================= FOLIO 06 — LODESTAR ============================= -->
+  <article class="folio" data-roman="VI">
+    <div class="folio-head" data-reveal>
+      <span class="folio-no">Plate VI.</span>
+      <h3>LODESTAR</h3>
+    </div>
+    <span class="folio-sub" data-reveal>Know What Your AI Actually Did — Independent Evidence for AI Coding Sessions</span>
+    <p class="folio-stack" data-reveal><b>Stack —</b> TypeScript · Node.js · SQLite · Chokidar · simple-git · React · Vite · Tailwind CSS · Vitest</p>
+    <div class="folio-grid">
+      <ul class="notes" data-reveal>
+        <li>Kept running into the same doubt with AI coding agents like Claude Code and Cursor — after a long session the AI says "I changed these files and all the tests pass", and you basically just have to believe it.</li>
+        <li>Built LODESTAR, a small command-line tool that sits between you and the AI and quietly watches what actually happens on your machine — file creations, edits, deletions, every command it runs with its exit code, and the Git state.</li>
+        <li>Using it is simple: install it, initialise it once in your project, then launch your AI assistant through LODESTAR and work exactly like you normally would — when the session ends, one command gives you a full report of what really happened.</li>
+        <li>The report proves things the AI's own summary can't — which files truly changed, whether the tests genuinely passed, and even whether code got edited <em>after</em> the last successful test run, which is exactly the kind of thing you'd never catch by hand.</li>
+        <li>Inside, it's a one-way pipeline: every observed event becomes a standard record in a SQLite ledger, and each entry is hash-chained to the one before it — like a tiny blockchain — so if anyone edits the evidence later, the standalone verifier catches it instantly.</li>
+        <li>Deterministic rules then read the ledger and turn raw events into plain facts, and the same verified evidence is rendered three ways — a terminal report, a local dashboard, and a shareable HTML file — so every view always agrees, and you can even replay the whole session.</li>
+        <li>Made it fully local and offline — no accounts, no cloud, no telemetry — because a tool whose whole job is trust shouldn't ask you to trust a server too.</li>
+      </ul>
+      <aside class="folio-side" data-reveal>
+        <h5>Field note</h5>
+        <p class="side-note">LODESTAR never judges the AI — it never says "the AI lied." It just shows the receipts, straight from the operating system, and lets you decide. Evidence first, interpretation left to the human.</p>
+        <h5>Access</h5>
+        <div class="folio-links">
+          <a href="https://github.com/Gshanmuk8/Loadstar" target="_blank" rel="noopener" class="tlink">GitHub repository ↗</a>
         </div>
       </aside>
     </div>
