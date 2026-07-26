@@ -1951,6 +1951,23 @@ html[data-theme='dark'] .page-leaf::before{
   }
 }
 
+/* ---- The magnified page ------------------------------------------------
+   Set on the root while the reader holds the volume away from natural
+   scale. Deferring a chapter's rendering is judged against the layout
+   viewport, which a pinch never moves — so pinched out, deferred chapters
+   sit in plain view and fill in only as they are reached. While the reader
+   is inspecting, the whole sheet renders; the deferral returns with the
+   natural scale. Only the hand-held edition ever carries the class.      */
+@media (max-width: 1024px){
+  html.is-magnified .folio,
+  html.is-magnified .essay,
+  html.is-magnified .prose,
+  html.is-magnified .dossier{
+    content-visibility:visible;
+    contain-intrinsic-size:none;
+  }
+}
+
 /* ---- Touch control — every tap answers like a pressed object ----------- */
 @media (hover: none){
   a, button{ -webkit-tap-highlight-color:rgba(156,124,46,.18); }

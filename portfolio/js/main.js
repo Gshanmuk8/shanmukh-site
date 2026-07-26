@@ -538,6 +538,15 @@ document.addEventListener('DOMContentLoaded', () => {
        Math.cos(y * 0.0013 - t * 0.00015) +
        Math.sin((x + y) * 0.0007 + t * 0.00022 + shift)) * 0.6;
 
+    /* The visual viewport — the pane the reader is actually looking
+       through, which a pinch moves and scales without the layout viewport
+       changing at all. Nothing in the volume was watching it. */
+    const vv = window.visualViewport;
+    const watchZoom = !!vv && handHeld;
+    let vvHold = false;      // a pinch is in flight; the brush is down
+    let zoomed  = false;     // the reader is magnified; it stays down
+    const magnified = () => watchZoom && vv.scale > 1.01;
+
     let compact = handHeld;
     const resize = () => {
       W = window.innerWidth; H = window.innerHeight;
@@ -568,6 +577,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const scratch = document.createElement('canvas');
     let lastW = 0, lastH = 0;
     const reshape = () => {
+      /* Some phone browsers report a resize while pinching. A pinch is not
+         a new page and must never re-ground the sheet: that is the most
+         expensive work in the file, landing in the middle of the most
+         raster-bound gesture the browser has. */
+      if (magnified()) return;
       const w = window.innerWidth, h = window.innerHeight;
       if (compact && w === lastW && h !== lastH && Math.abs(h - lastH) < 220){
         W = w; H = h;
@@ -615,6 +629,47 @@ document.addEventListener('DOMContentLoaded', () => {
       running = !document.hidden;
       if (running) pump();
     });
+
+    /* ---- Pinch, zoom, and the magnified page ----------------------------
+       A pinch scales the visual viewport while the layout viewport holds
+       still, so it fires neither scroll nor resize: every rest the painting
+       had was blind to it, and the brush kept working a full-screen fixed
+       layer while the browser re-rasterised the entire page at a new scale.
+       That is the whole of the roughness in a zoom gesture.
+
+       So the brush comes down for the gesture — and while the reader stays
+       magnified it does not come back up. A fixed sheet is re-rastered at
+       the zoom factor on every repaint, and someone who has zoomed in has
+       done it to read something, not to watch the paint move. The field
+       simply holds the frame it was on, and resumes on the way out. */
+    if (watchZoom){
+      let vvSettle = 0;
+      /* Away from natural scale the reader is inspecting the page, and
+         chapters deferred by content-visibility are judged against the
+         layout viewport — which a pinch never moves. Pinched out, those
+         blocks sit in the middle of what the reader can plainly see and
+         fill in only as they are reached. So once the gesture settles,
+         a magnified page renders whole: the deferral is worth its cost
+         while reading at natural scale, and not while inspecting. */
+      const offScale = () => Math.abs(vv.scale - 1) > 0.01;
+      const settle = () => {
+        vvHold = false;
+        zoomed = magnified();
+        document.documentElement.classList.toggle('is-magnified', offScale());
+        if (!zoomed) pump();          // parked frames revive here, and only here
+      };
+      const stir = () => {
+        vvHold = true;
+        clearTimeout(vvSettle);
+        vvSettle = setTimeout(settle, 170);
+      };
+      vv.addEventListener('resize', stir, { passive: true });
+      vv.addEventListener('scroll', stir, { passive: true });
+      /* honour a scale the browser restored, without starting the loop here
+         — the brush is taken up once, at the foot of this block */
+      zoomed = magnified();
+      document.documentElement.classList.toggle('is-magnified', offScale());
+    }
     /* the impasto threshold: raking light only ever showed on a loaded
        brush, so on the phone only the broadest strokes carry the three
        passes and the rest are laid in one — the relief the eye actually
@@ -624,6 +679,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const frame = ts => {
       scheduled = false;
       if (!running) return;
+      /* parked: settle() is what brings the brush back */
+      if (vvHold || zoomed) return;
       if (coarsePointer){
         if (scrolling || (beat++ & 1)){ pump(); return; }
       }
