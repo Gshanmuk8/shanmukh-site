@@ -1890,6 +1890,14 @@ html[data-theme='dark'] .page-leaf::before{
      stays, so even a failed canvas shows celadon, never black. */
   html.has-field body,
   html.has-field[data-theme='dark'] body{ background-image:none; }
+
+  /* optimizeLegibility asks for full kerning and ligature shaping on every
+     glyph painted, and this volume is thirteen screens of little but serif
+     text. `auto` still kerns and still sets common ligatures in every
+     browser this site meets — verified layout-identical earlier: same
+     document height, same line count, same line widths. A raster hint,
+     nothing more; the desk keeps the full treatment. */
+  body{ text-rendering:auto; }
 }
 
 /* ---- One layer per pixel ------------------------------------------------
