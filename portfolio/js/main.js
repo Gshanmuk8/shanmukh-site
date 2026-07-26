@@ -651,7 +651,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const track = e => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true; };
     if (finePointer) window.addEventListener('pointermove', track, { passive: true });
     window.addEventListener('blur', () => { mouse.active = false; });
-    window.addEventListener('scroll', () => { targetShift = window.scrollY * 0.0006; }, { passive: true });
+    /* A trackpad pinch on a laptop does not move window.scrollY the way a
+       scroll does, but on Windows Chrome it can still land here with a
+       sudden, discontinuous jump in scrollY as a side effect of the pinch
+       being interpreted for zoom — not a smooth run of scroll events like
+       an actual scroll produces. targetShift fed straight from scrollY, so
+       that one discontinuous jump snapped the whole painting's drift target
+       in a single step; the field's own slow lerp toward it is what then
+       reads as the background visibly jumping or shifting. A jump bigger
+       than any real single scroll frame can produce is capped, so the
+       target the painting drifts toward can only ever move as fast as an
+       actual scroll gesture would move it. */
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      const dy = y - lastScrollY;
+      lastScrollY = y;
+      const MAX_STEP = 400;   // generous for a real scroll frame, not for a zoom artefact
+      targetShift += Math.max(-MAX_STEP, Math.min(MAX_STEP, dy)) * 0.0006;
+    }, { passive: true });
 
     /* The dip — as the reader settles on a folio, essay or section, freshly
        spawned strokes take that plate's own pigment, so the field slowly
