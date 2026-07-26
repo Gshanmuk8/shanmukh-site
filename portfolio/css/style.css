@@ -1921,10 +1921,16 @@ html[data-theme='dark'] .page-leaf::before{
     transition:opacity .45s var(--ease) !important;
   }
   [data-reveal="ink"]{ clip-path:none !important; }
-  /* long chapters render only what approaches the eye */
+  /* long chapters render only what approaches the eye. The reserved height
+     is the blocks' real measured height at phone width (folio 832-833,
+     essay 809-824, prose 820-821, dossier 793): a placeholder short by a
+     hundred pixels grows the document under the reader each time a block
+     renders, and near the foot of the page — where the reader is pressed
+     against the scroll limit — that moving limit reads as the page
+     sticking. `auto` keeps each true size once known. */
   .folio, .essay, .prose, .dossier{
     content-visibility:auto;
-    contain-intrinsic-size:auto 720px;
+    contain-intrinsic-size:auto 820px;
   }
   .bookmark-ribbon{ box-shadow:none; }
 }
