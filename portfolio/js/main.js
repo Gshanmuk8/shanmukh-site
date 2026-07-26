@@ -684,21 +684,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resize();
     let lastW = window.innerWidth, lastH = window.innerHeight;
+    /* Ctrl+zoom on the desk changes window.innerWidth/innerHeight in CSS
+       pixels on every step of the gesture — the same kind of viewport
+       change the phone's URL bar caused, just triggered by the keyboard
+       and mouse wheel instead of the browser chrome. Unthrottled, each
+       step re-ran the full rebuild synchronously — eleven full-screen
+       gradient fills, every stroke respawned — as many times a second as
+       the browser reported a size change. That is the stutter; coalescing
+       it to once per settled frame is the fix. */
+    let resizeQueued = false;
     window.addEventListener('resize', () => {
-      const w = window.innerWidth, h = window.innerHeight;
-      /* Chrome's URL bar collapsing mid-scroll fires resize. Rebuilding the
-         whole painting — eleven full-screen gradient fills and every stroke
-         respawned — in the middle of the gesture that caused it is a visible
-         hitch on every direction change near the top of the page. A moved
-         browser chrome is not a new page: the sheet is stretched the few
-         missing pixels and left alone. A real reshape still rebuilds. */
-      if ((coarsePointer || w < 700) && w === lastW && Math.abs(h - lastH) < 220){
-        lastH = h;
-        canvas.style.height = h + 'px';
-        return;
-      }
-      lastW = w; lastH = h;
-      resize();
+      if (resizeQueued) return;
+      resizeQueued = true;
+      requestAnimationFrame(() => {
+        resizeQueued = false;
+        const w = window.innerWidth, h = window.innerHeight;
+        /* Chrome's URL bar collapsing mid-scroll fires resize. Rebuilding the
+           whole painting in the middle of the gesture that caused it is a
+           visible hitch on every direction change near the top of the page.
+           A moved browser chrome is not a new page: the sheet is stretched
+           the few missing pixels and left alone. A real reshape still
+           rebuilds — and on the desk, a genuine zoom step still redraws the
+           painting at its new size, just once per settled frame rather than
+           once per pixel of the gesture. */
+        if ((coarsePointer || w < 700) && w === lastW && Math.abs(h - lastH) < 220){
+          lastH = h;
+          canvas.style.height = h + 'px';
+          return;
+        }
+        lastW = w; lastH = h;
+        resize();
+      });
     });
     window.addEventListener('sk-theme', () => { setCabinet(); resize(); restBrush(); pump(); });
     restBrush();
