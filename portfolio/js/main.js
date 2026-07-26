@@ -86,18 +86,32 @@ document.addEventListener('DOMContentLoaded', () => {
   ribbon.className = 'bookmark-ribbon';
   ribbon.setAttribute('aria-hidden', 'true');
   document.body.appendChild(ribbon);
-  let ribbonTick = false;
-  const setRibbon = () => {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-    ribbon.style.height = Math.max(34, p * window.innerHeight) + 'px';
-    ribbonTick = false;
+  /* Reading scrollHeight here with a style write already queued forced the
+     browser to lay out the whole document again on every scrolled frame —
+     on the one thread the scroll itself needs. The extent is a property of
+     the document, not of the scroll: it is measured when the document
+     changes, and the ribbon writes only when its rounded height moves. */
+  let ribbonTick = false, ribbonExtent = 0, ribbonView = 0, ribbonPx = -1;
+  const measureRibbon = () => {
+    ribbonView = window.innerHeight;
+    ribbonExtent = document.documentElement.scrollHeight - ribbonView;
   };
+  const setRibbon = () => {
+    ribbonTick = false;
+    const p = ribbonExtent > 0 ? Math.min(1, window.scrollY / ribbonExtent) : 0;
+    const px = Math.round(Math.max(34, p * ribbonView));
+    if (px !== ribbonPx){ ribbonPx = px; ribbon.style.height = px + 'px'; }
+  };
+  measureRibbon();
   setRibbon();
   window.addEventListener('scroll', () => {
     if (!ribbonTick){ requestAnimationFrame(setRibbon); ribbonTick = true; }
   }, { passive: true });
-  window.addEventListener('resize', setRibbon);
+  window.addEventListener('resize', () => { measureRibbon(); setRibbon(); });
+  if ('ResizeObserver' in window){
+    new ResizeObserver(() => { measureRibbon(); setRibbon(); })
+      .observe(document.documentElement);
+  }
 
   /* ---- Exhibit placard — names the section currently under glass ---- */
   const placard = document.createElement('div');

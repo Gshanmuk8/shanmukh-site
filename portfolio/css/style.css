@@ -1878,6 +1878,14 @@ html[data-theme='dark'] .page-leaf::before{
 @media (max-width: 900px){
   /* fixed-attachment gradients are a known phone scroll-jank source */
   body, html[data-theme='dark'] body{ background-attachment:scroll; }
+}
+/* The lighter 8px backdrop blur is for the small tablet only. This rule
+   sits later in the sheet than the 700px block above that gives phones a
+   settled solid tone instead — so with both written at max-width it was
+   this one the cascade obeyed, and phones re-sampled and re-blurred the
+   strip behind the fixed nav on every scrolled frame. The single biggest
+   continuous scroll cost on a phone GPU, reinstated by accident of order. */
+@media (min-width: 701px) and (max-width: 900px){
   .site-nav.is-scrolled,
   html[data-theme='dark'] .site-nav.is-scrolled{ backdrop-filter:blur(8px); }
 }
