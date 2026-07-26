@@ -339,20 +339,29 @@ document.addEventListener('DOMContentLoaded', () => {
   /* fine pointers only: on touch there is no pointer to breathe with, and
      a per-frame style write is pure cost — the loop never starts there */
   if (hero && !reduceMotion && finePointer){
-    let tX = 0, tY = 0, cX = 0, cY = 0, sc = window.scrollY;
+    let tX = 0, tY = 0, cX = 0, cY = 0, sc = window.scrollY, scSmooth = window.scrollY;
     if (finePointer){
       window.addEventListener('pointermove', e => {
         tX = e.clientX / innerWidth  - 0.5;
         tY = e.clientY / innerHeight - 0.5;
       }, { passive: true });
     }
+    /* A trackpad pinch does not scroll the page the way an actual scroll
+       does, but on Windows Chrome it can still land here with a sudden,
+       discontinuous jump in scrollY as a side effect of the pinch being
+       read for zoom. sc used to feed straight into this orb's transform
+       raw, unlerped, every frame — so one such jump snapped a 720px,
+       64px-blurred, absolutely-positioned element instantly on the very
+       next frame, forever, since this loop never stops. That is the
+       stutter and the visible snap a cursor-driven zoom produced. */
     window.addEventListener('scroll', () => { sc = window.scrollY; }, { passive: true });
     const depthLoop = () => {
       cX += (tX - cX) * 0.05;
       cY += (tY - cY) * 0.05;
+      scSmooth += (sc - scSmooth) * 0.08;
       if (orn){
         orn.style.transform =
-          'translate(' + (cX * -30).toFixed(1) + 'px,' + (cY * -22 + sc * 0.10).toFixed(1) + 'px)';
+          'translate(' + (cX * -30).toFixed(1) + 'px,' + (cY * -22 + scSmooth * 0.10).toFixed(1) + 'px)';
       }
       if (heroTitle){
         heroTitle.style.transform =
