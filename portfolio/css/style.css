@@ -1192,9 +1192,16 @@ html.is-opening{ overflow:hidden; }
 /* block, leaving the margins illuminated — a manuscript page that breathes. */
 #pigment-field{
   position:fixed; inset:0; z-index:-2;
-  width:100vw; height:100vh;
   pointer-events:none;
 }
+/* No separate width/height. inset:0 on a fixed element already sizes it to
+   the viewport minus the scrollbar's own reserved gutter — which is the box
+   window.innerWidth/innerHeight report too, and the box the JS canvas.width
+   is set to. width:100vw does NOT exclude that gutter, so it and inset:0
+   could disagree by the scrollbar's width. That standing few-pixel seam
+   only became visible as a shift or gap once the browser's own zoom
+   changed how the scrollbar rendered relative to it — this is what was
+   read as the desktop zoom bug. One sizing authority now, not two. */
 /* The still edition of the field, for the hand: the same broad transparent
    glazes the painter lays into the wet ground, as one static wash. The
    element is fixed and viewport-sized, so these percentages resolve against
