@@ -2032,3 +2032,28 @@ html[data-theme='dark'] .page-leaf::before{
   .catchword{ opacity:1 !important; transform:none !important; transition:none !important; }
   .catchword svg path{ stroke-dashoffset:0 !important; transition:none !important; }
 }
+
+/* =========================================================================
+   THE FOOT OF THE PAGE, FINALLY QUIET — hand-held edition
+   Reaching the bottom brings the URL bar back, and the URL bar changes the
+   viewport. The still wash and the veil were pinned with inset:0 — sized by
+   the viewport — so at that exact moment both full-screen layers threw away
+   their raster and redrew their gradients at the new size. Sized to the
+   large viewport instead, the bar's coming and going never resizes them:
+   drawn once, composited forever. (The vh line is the fallback; on modern
+   phone browsers vh and lvh are the same large viewport.)
+   ========================================================================= */
+@media (max-width: 700px){
+  #pigment-still, .field-veil{
+    inset:auto; top:0; left:0;
+    width:100vw;
+    height:100vh;
+    height:100lvh;
+  }
+  /* And the last expensive drawing at the foot: the seal's motto, set in
+     SVG text curved along two rings — the priciest raster in the footer,
+     paid on first arrival. The reader asked for everything that hurts to
+     go: the seal keeps its two circles and its S, and sheds the ring text.
+     The desk keeps the full engraving. */
+  .press-stamp .stamp-ring{ display:none; }
+}
