@@ -1840,6 +1840,18 @@ html[data-theme='dark'] .page-leaf::before{
   .press-stamp .stamp-ring{ animation:none; }
   .orb-moon .moon-halo{ animation:none; }
   .volvelle .vol-outer, .volvelle .vol-mid{ animation:none !important; }
+  /* The solar instrument sits in the fixed nav — the one element on screen
+     for the whole visit. Transforms on SVG groups are not composited, so
+     these three endless rotations repainted it behind every frame of every
+     scroll, for a crown that turns once in seventy seconds. The moon's
+     halo was already stilled here; the sun keeps it company. */
+  .theme-orb .sun-rays,
+  .theme-orb .sun-corona,
+  .theme-orb .sun-orbit{ animation:none; }
+  .orb-moon .moon-stars circle{ animation:none; opacity:.7; }
+  /* the ribbon's growth is confined to itself, so the phone never widens
+     the reflow beyond an 8px strip */
+  .bookmark-ribbon{ contain:strict; }
 }
 /* the scrolled nav trades backdrop sampling for a settled solid tone */
 @media (max-width: 700px){
@@ -1878,6 +1890,14 @@ html[data-theme='dark'] .page-leaf::before{
 @media (max-width: 900px){
   /* fixed-attachment gradients are a known phone scroll-jank source */
   body, html[data-theme='dark'] body{ background-attachment:scroll; }
+}
+/* The nav is fixed and always on screen, so a backdrop-filter on it makes
+   the phone re-sample and re-blur the region behind it on every scrolled
+   frame. The rule above used to reach phones too and, sitting later in the
+   sheet, quietly overrode the settled tone set for them at 700px — the
+   most expensive effect in the stylesheet, reinstated by cascade order.
+   It now stops where the small tablet stops. */
+@media (min-width: 701px) and (max-width: 900px){
   .site-nav.is-scrolled,
   html[data-theme='dark'] .site-nav.is-scrolled{ backdrop-filter:blur(8px); }
 }
@@ -1908,6 +1928,29 @@ html[data-theme='dark'] .page-leaf::before{
   }
   .wax-seal:hover, .wax-seal:active{ transform:rotate(-6deg) scale(.96); }
 }
+/* ---- The hand, at any width --------------------------------------------
+   A large phone or a small tablet sits above the 700px cascade but still
+   carries a phone's GPU, memory and thermal budget. Gathered here is what
+   is pure overhead rather than look — compositor layers held open for
+   animations that have already finished, and chapters rasterised long
+   before they approach the screen. A desk never matches this block, so the
+   desk edition is untouched.                                              */
+@media (hover: none) and (max-width: 1024px){
+  /* will-change keeps a live GPU layer per element for the whole visit;
+     the reveal needs one for a second. Browsers promote on demand — the
+     hint only pays for itself when the property is about to change. */
+  [data-reveal]{ will-change:auto; }
+  #opening{ will-change:auto; }
+  /* transitioning a blur over large blocks is the costliest reveal there
+     is, and the hand-held edition already reads without it below 700px */
+  [data-reveal]{ filter:none; }
+  /* long chapters rasterise as they approach the eye, not all at once */
+  .folio, .essay, .prose, .dossier{
+    content-visibility:auto;
+    contain-intrinsic-size:auto 720px;
+  }
+}
+
 /* ---- Touch control — every tap answers like a pressed object ----------- */
 @media (hover: none){
   a, button{ -webkit-tap-highlight-color:rgba(156,124,46,.18); }
