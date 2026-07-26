@@ -347,6 +347,26 @@ document.addEventListener('DOMContentLoaded', () => {
   /* celadon veil (in CSS) calms the paint behind the text, leaving the      */
   /* margins illuminated — the logic of a real illuminated manuscript.       */
   if (!reduceMotion){
+    /* THE STILL EDITION — the phone gets the painting as a painting.
+       Even fully settled, a canvas is a texture the GPU must hold and
+       recomposite every frame, and its opening seconds of stroke-laying
+       land exactly when the reader first scrolls. The phone now receives
+       the same ground as one static CSS wash on its own fixed layer:
+       rasterised once at viewport size, composited for free, no script,
+       no uploads, nothing to settle, nothing that can ever compete with
+       the thumb. The desk keeps the living pigment field, untouched. */
+    const stillGround = coarsePointer || window.innerWidth < 700;
+    if (stillGround){
+      const field = document.createElement('div');
+      field.id = 'pigment-still';
+      field.setAttribute('aria-hidden', 'true');
+      document.body.prepend(field);
+      const veil = document.createElement('div');
+      veil.className = 'field-veil';
+      veil.setAttribute('aria-hidden', 'true');
+      document.body.prepend(veil);
+      document.documentElement.classList.add('has-field');
+    } else {
     const canvas = document.createElement('canvas');
     canvas.id = 'pigment-field';
     canvas.setAttribute('aria-hidden', 'true');
@@ -660,6 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('sk-theme', () => { setCabinet(); resize(); restBrush(); pump(); });
     restBrush();
     pump();
+    }
   }
 
   /* ---- IV. The plates lift and take their pigment as you approach ----- */

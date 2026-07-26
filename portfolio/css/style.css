@@ -1195,6 +1195,32 @@ html.is-opening{ overflow:hidden; }
   width:100vw; height:100vh;
   pointer-events:none;
 }
+/* The still edition of the field, for the hand: the same broad transparent
+   glazes the painter lays into the wet ground, as one static wash. The
+   element is fixed and viewport-sized, so these percentages resolve against
+   the screen — rasterised once, composited for free, never against the
+   document. The central veil above it calms the middle exactly as it calms
+   the living painting. */
+#pigment-still{
+  position:fixed; inset:0; z-index:-2;
+  pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 12% 8%,  rgba(31,58,147,.10),  transparent 55%),
+    radial-gradient(110% 90% at 92% 16%, rgba(198,54,43,.08),  transparent 52%),
+    radial-gradient(120% 100% at 85% 90%, rgba(30,107,87,.11), transparent 55%),
+    radial-gradient(100% 90% at 8% 92%,  rgba(190,110,134,.09), transparent 50%),
+    radial-gradient(90% 70% at 55% 45%,  rgba(224,190,107,.07), transparent 60%),
+    var(--paper);
+}
+/* by lamplight the same glazes turn luminous, on the night paper */
+html[data-theme='dark'] #pigment-still{
+  background:
+    radial-gradient(120% 90% at 12% 8%,  rgba(94,127,214,.12),  transparent 55%),
+    radial-gradient(110% 90% at 92% 16%, rgba(224,106,85,.08),  transparent 52%),
+    radial-gradient(120% 100% at 85% 90%, rgba(79,168,140,.12), transparent 55%),
+    radial-gradient(100% 90% at 8% 92%,  rgba(214,147,168,.09), transparent 50%),
+    var(--paper);
+}
 .field-veil{
   position:fixed; inset:0; z-index:-1; pointer-events:none;
   background:radial-gradient(78% 62% at 50% 46%,
