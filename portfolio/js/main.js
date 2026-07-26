@@ -711,6 +711,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resize();
     let lastW = window.innerWidth, lastH = window.innerHeight;
+    /* ---- DIAGNOSTIC — remove once the real cause is confirmed -----------
+       Every fix so far has been a guess: this environment cannot open a
+       browser, so nothing has ever been watched actually happen. Rather
+       than ship a sixth guess, this counts what fires during the reader's
+       own zoom gesture and prints it to their own console, so the next
+       step is built from what is actually true on their machine instead
+       of what is plausible from reading the code. Enable with
+       window.__zoomDebug = true in the console, then zoom, then read the
+       counts back. Zero cost when off (a single boolean check per event). */
+    window.__zoomDebug = false;
+    let __dbgResize = 0, __dbgRebuild = 0, __dbgScroll = 0, __dbgScrollJump = 0;
+    let __dbgLastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      if (!window.__zoomDebug) return;
+      __dbgScroll++;
+      const dy = Math.abs(window.scrollY - __dbgLastScrollY);
+      if (dy > 50) __dbgScrollJump++;
+      __dbgLastScrollY = window.scrollY;
+    }, { passive: true });
+    window.__zoomDebugReport = () => console.log(
+      'resize events:', __dbgResize,
+      '| full canvas rebuilds:', __dbgRebuild,
+      '| scroll events:', __dbgScroll,
+      '| scroll jumps >50px:', __dbgScrollJump,
+      '| current devicePixelRatio:', window.devicePixelRatio
+    );
     /* Ctrl+zoom on the desk changes window.innerWidth/innerHeight in CSS
        pixels on every step of the gesture — the same kind of viewport
        change the phone's URL bar caused, just triggered by the keyboard
@@ -721,6 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
        it to once per settled frame is the fix. */
     let resizeQueued = false;
     window.addEventListener('resize', () => {
+      if (window.__zoomDebug) __dbgResize++;
       if (resizeQueued) return;
       resizeQueued = true;
       requestAnimationFrame(() => {
@@ -739,6 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
           canvas.style.height = h + 'px';
           return;
         }
+        if (window.__zoomDebug) __dbgRebuild++;
         lastW = w; lastH = h;
         resize();
       });
