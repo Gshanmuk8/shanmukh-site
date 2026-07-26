@@ -105,10 +105,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const mobileMenu = document.querySelector('.mobile-menu');
   const closeBtn = document.querySelector('.mobile-menu-close');
   if (burger && mobileMenu){
-    burger.addEventListener('click', () => mobileMenu.classList.add('is-open'));
-    closeBtn && closeBtn.addEventListener('click', () => mobileMenu.classList.remove('is-open'));
-    mobileMenu.querySelectorAll('a').forEach(a =>
-      a.addEventListener('click', () => mobileMenu.classList.remove('is-open')));
+    /* The volume behind the menu is pinned while it is open. Thirteen screens
+       were free to scroll under a full-screen overlay, which on a phone reads
+       as the page having come loose. Pinning the sheet loses the reader's
+       place, so it is remembered and restored — instantly, since the sheet
+       scrolls smoothly and an animated jump back would be seen. */
+    let heldAt = 0;
+    const openMenu = () => {
+      heldAt = window.scrollY;
+      document.documentElement.classList.add('menu-open');
+      document.body.style.top = -heldAt + 'px';
+      mobileMenu.classList.add('is-open');
+    };
+    const closeMenu = () => {
+      mobileMenu.classList.remove('is-open');
+      document.documentElement.classList.remove('menu-open');
+      document.body.style.top = '';
+      window.scrollTo({ top: heldAt, behavior: 'instant' });
+    };
+    burger.addEventListener('click', openMenu);
+    closeBtn && closeBtn.addEventListener('click', closeMenu);
+    /* a link both closes the menu and leaves the page; unpin first so the
+       leaf that follows is measured against a page that is where it was */
+    mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
   }
 
   /* ---- Sections settle in as they enter the viewport ---- */
@@ -343,7 +362,14 @@ document.addEventListener('DOMContentLoaded', () => {
     'blog.html':     'Chapter III — Fields of Inquiry',
     'contact.html':  'Chapter IV — Correspondence'
   };
-  if (!reduceMotion){
+  /* Where the browser turns the leaf itself, the script must not: intercepting
+     the click to hold a sheet on screen is precisely the wait being removed,
+     and a scripted cover would be what the transition snapshotted. The signal
+     is `onpagereveal`, which shipped with cross-document view transitions —
+     the same-document API predates them by many versions and would answer yes
+     too early. */
+  const browserTurnsTheLeaf = handHeld && 'onpagereveal' in window;
+  if (!reduceMotion && !browserTurnsTheLeaf){
     document.querySelectorAll('a[href$=".html"]').forEach(a => {
       const href = a.getAttribute('href');
       if (!href || href.startsWith('http')) return;

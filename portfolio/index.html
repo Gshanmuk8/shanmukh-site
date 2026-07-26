@@ -17,6 +17,13 @@ document.documentElement.setAttribute('data-theme',
   t || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 }catch(e){}})();
 </script>
+<!-- The type, requested in the head so the preload scanner opens it in the
+     first parse rather than after style.css has been fetched and parsed.
+     Both origins are pre-connected: the handshakes then happen off the
+     critical path instead of cold, in front of the font files. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&amp;family=EB+Garamond:ital,wght@0,400..700;1,400..700&amp;family=Fragment+Mono:ital@0;1&amp;family=Marcellus&amp;display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>

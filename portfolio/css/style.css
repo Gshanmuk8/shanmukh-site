@@ -6,7 +6,13 @@
    Colours are orchestrated, not scattered: each plate takes its own pigment.
    ========================================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Fragment+Mono:ital@0;1&family=Marcellus&display=swap');
+/* The four families are requested from the document head, not from here.
+   An @import cannot begin until this stylesheet has been fetched and parsed,
+   which put the type behind three strictly serialised round trips: this file,
+   then the font stylesheet, then the font files themselves. In the head the
+   preload scanner sees the request in the first parse of the HTML and opens it
+   alongside this file, and the two origins are pre-connected before either is
+   needed. Same type, one whole round trip earlier. */
 
 :root{
   /* ---- Ground — eau-de-nil daylight (rare celadon; no beige/grey/white) */
@@ -2129,7 +2135,54 @@ html[data-theme='dark'] .page-leaf::before{
   }
 }
 
+/* =========================================================================
+   THE LEAF, TURNED BY THE BROWSER
+   The hand-held edition asks the browser to animate between documents. The
+   volume is five separate files, so every chapter was a hard reload dressed
+   up by a scripted sheet that had to be held on screen before navigation
+   could even begin — the wait was the animation. A cross-document view
+   transition is the same gesture with none of the wait: the browser
+   snapshots the leaf, navigates immediately, and animates on the
+   compositor. Where it is unsupported, nothing here applies and the
+   scripted leaf keeps the job.
+   ========================================================================= */
+@media (hover: none) and (max-width: 1024px){
+  @view-transition{ navigation: auto; }
+
+  /* restrained, and echoing the leaf: the old page gives way, the new one
+     rises the last few pixels into place */
+  ::view-transition-old(root){ animation:leaf-give .16s ease both; }
+  ::view-transition-new(root){ animation:leaf-take .24s ease both; }
+}
+@keyframes leaf-give{ to{ opacity:0; } }
+@keyframes leaf-take{ from{ opacity:0; transform:translateY(10px); } }
+
 /* ---- Touch control — every tap answers like a pressed object ----------- */
+@media (hover: none){
+  /* the browser need not wait to see whether a tap becomes a double-tap
+     zoom before it acts on it — pinch and pan are untouched */
+  a, button, .nav-burger, .theme-orb{ touch-action:manipulation; }
+
+  /* A thumb is about 44px. The menu's own links were 27px tall inside a
+     full-screen overlay with room to spare, so they simply get it.
+     (The burger is 34x22 and cannot be grown this way — it is border-box
+     with a fixed width and height, and the three ruled lines it draws are
+     absolutely positioned against that box, so padding does nothing and
+     resizing would move the glyph. Fixing it means restating the box and
+     re-centring the lines, which changes the nav's metrics — left alone
+     deliberately rather than half-done.) */
+  .mobile-menu a{ padding-block:9px; }
+
+  /* With the menu open the volume behind it must not move. Thirteen screens
+     were still scrolling under a full-screen overlay, and on iOS the page
+     will bounce behind an overlay even when overflow alone is hidden — so
+     the sheet is pinned, and put back exactly where it was on close. */
+  html.menu-open{ overflow:hidden; }
+  html.menu-open body{
+    position:fixed; left:0; right:0; width:100%;
+    overflow:hidden;
+  }
+}
 @media (hover: none){
   a, button{ -webkit-tap-highlight-color:rgba(156,124,46,.18); }
   .ledger-row:active{ background:linear-gradient(90deg, rgba(224,190,107,.2), transparent 70%); padding-left:12px; }
