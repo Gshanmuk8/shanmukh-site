@@ -1845,6 +1845,13 @@ html[data-theme='dark'] .page-leaf::before{
 @media (max-width: 700px){
   .site-nav.is-scrolled{ backdrop-filter:none; background:rgba(207,230,221,.95); }
   html[data-theme='dark'] .site-nav.is-scrolled{ backdrop-filter:none; background:rgba(13,24,38,.95); }
+  /* The turning leaf is a full-screen sheet with a gradient and a 60px
+     blurred shadow. Parked off the bottom by a transform, it is still a
+     live composited layer — rasterised and held in GPU memory the whole
+     visit, on every page, to serve a half-second animation. Phones are
+     fill-rate bound first; the leaf now exists only while it is turning. */
+  .page-leaf{ visibility:hidden; }
+  .page-leaf.is-covering{ visibility:visible; }
 }
 
 /* ---- One layer per pixel ------------------------------------------------
