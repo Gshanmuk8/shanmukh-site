@@ -8,66 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer  = matchMedia('(pointer: fine)').matches;
-  const coarse       = matchMedia('(pointer: coarse)').matches;
-  /* the hand-held edition: the phone and the small tablet. Matches the
-     700px cascade of the stylesheet, so what the CSS hides the script
-     never builds. */
-  const handHeld     = coarse || window.innerWidth < 701;
-
-  /* ---- Who reveals the sheet ---------------------------------------------
-     Where the browser can run a scroll-driven animation, the reveals are
-     handed to the compositor and this script stops observing anything. That
-     is what makes the long chapters deferrable: an IntersectionObserver
-     never fires for an element inside a subtree the browser has skipped, so
-     while the fades depended on an observer, deferring a section would have
-     left everything inside it invisible. A declarative timeline has no such
-     problem — it is computed from the element's own position.
-
-     This condition must stay identical to the one in the stylesheet. If the
-     two ever disagree, one of them hides the page: the script would decline
-     to observe while the CSS declined to animate. */
-  const REVEAL_MQ = '(hover: none) and (max-width: 1024px)';
-  const cssReveals = matchMedia(REVEAL_MQ).matches &&
-                     CSS.supports('animation-timeline: view()');
-
-  /* ---- One scroll pipeline for the whole volume -------------------------
-     Four independent handlers used to race each other on every scroll
-     event — nav state, bookmark ribbon, the painting's rest flag, the
-     pigment drift — each dispatched separately and each free to write
-     style in the middle of the browser's own scroll work. Now there is
-     one passive listener: flags settle on the event itself, and every
-     job that touches the page lands together inside a single animation
-     frame, coalesced with the compositor rather than fighting it. */
-  const scrollNow  = [];                    // flag writes only — no layout, no style
-  const scrollFrame = [];                   // anything that touches the page
-  let scrollPending = false;
-  const flushScroll = () => {
-    scrollPending = false;
-    const y = window.scrollY;
-    for (let i = 0; i < scrollFrame.length; i++) scrollFrame[i](y);
-  };
-  window.addEventListener('scroll', () => {
-    for (let i = 0; i < scrollNow.length; i++) scrollNow[i]();
-    if (!scrollPending){ scrollPending = true; requestAnimationFrame(flushScroll); }
-  }, { passive: true });
-  const onScroll = fn => { scrollFrame.push(fn); fn(window.scrollY); };
-
-  /* ---- One resize pipeline ----------------------------------------------
-     A phone fires resize while you scroll: the URL bar collapsing changes
-     the viewport height mid-gesture. Everything here is therefore rAF-
-     coalesced too, and the costly rebuilds below decide for themselves
-     whether the sheet really changed shape. */
-  const resizeJobs = [];
-  let resizePending = false;
-  window.addEventListener('resize', () => {
-    if (resizePending) return;
-    resizePending = true;
-    requestAnimationFrame(() => {
-      resizePending = false;
-      for (let i = 0; i < resizeJobs.length; i++) resizeJobs[i]();
-    });
-  }, { passive: true });
-  const onResize = fn => resizeJobs.push(fn);
 
   /* ---- Day & night — restore the reader's chosen light ---- */
   const THEME_KEY = 'sk-theme';
@@ -91,7 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---- Nav scroll state ---- */
   const nav = document.querySelector('.site-nav');
   if (nav){
-    onScroll(y => nav.classList.toggle('is-scrolled', y > 30));
+    const onScroll = () => nav.classList.toggle('is-scrolled', window.scrollY > 30);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
   }
 
   /* ---- Highlight the current page in the nav ---- */
@@ -105,79 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const mobileMenu = document.querySelector('.mobile-menu');
   const closeBtn = document.querySelector('.mobile-menu-close');
   if (burger && mobileMenu){
-    /* The volume behind the menu is pinned while it is open. Thirteen screens
-       were free to scroll under a full-screen overlay, which on a phone reads
-       as the page having come loose. Pinning the sheet loses the reader's
-       place, so it is remembered and restored — instantly, since the sheet
-       scrolls smoothly and an animated jump back would be seen. */
-    let heldAt = 0;
-    const openMenu = () => {
-      heldAt = window.scrollY;
-      document.documentElement.classList.add('menu-open');
-      document.body.style.top = -heldAt + 'px';
-      mobileMenu.classList.add('is-open');
-    };
-    const closeMenu = () => {
-      mobileMenu.classList.remove('is-open');
-      document.documentElement.classList.remove('menu-open');
-      document.body.style.top = '';
-      window.scrollTo({ top: heldAt, behavior: 'instant' });
-    };
-    burger.addEventListener('click', openMenu);
-    closeBtn && closeBtn.addEventListener('click', closeMenu);
-    /* a link both closes the menu and leaves the page; unpin first so the
-       leaf that follows is measured against a page that is where it was */
-    mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+    burger.addEventListener('click', () => mobileMenu.classList.add('is-open'));
+    closeBtn && closeBtn.addEventListener('click', () => mobileMenu.classList.remove('is-open'));
+    mobileMenu.querySelectorAll('a').forEach(a =>
+      a.addEventListener('click', () => mobileMenu.classList.remove('is-open')));
   }
 
   /* ---- Sections settle in as they enter the viewport ---- */
   const revealEls = document.querySelectorAll('[data-reveal]');
-  if (cssReveals){
-    /* The stylesheet reveals the sheet on a view() timeline. Nothing is
-       observed, no class is set, and no inline transition delay is written
-       to three dozen elements — the fades run off the main thread entirely,
-       and they keep running inside deferred chapters.
-
-       One promise has to be kept absolutely: something must actually reveal
-       the page. Every block starts at opacity 0, so if a timeline yields no
-       value — an inactive timeline, a half-implementation that answers
-       CSS.supports and then does nothing — the reader would be handed a
-       blank sheet. Cheap insurance: two frames in, a block that is plainly
-       on screen must not be transparent. If it is, the animation is
-       cancelled and the volume is simply shown. */
-    /* The frontispiece is exempt in the stylesheet and always legible, so
-       the reader can never be handed a blank sheet. What remains to guard is
-       the rest of the volume: if the timeline turns out to produce nothing,
-       the chapters below would stay invisible as they are scrolled to.
-
-       So the verdict is taken from blocks that have actually arrived on
-       screen — a block below the fold is *supposed* to be transparent, and
-       proves nothing. The first block that arrives opaque proves the
-       timeline works and retires the guard for good; a screenful that
-       arrives transparent trips it once and simply shows the volume. Either
-       way it stops running, so it never costs the scroll anything. */
-    let guardSettled = false;
-    const guard = () => {
-      if (guardSettled) return;
-      let arrived = 0;
-      for (const el of revealEls){
-        const r = el.getBoundingClientRect();
-        if (r.bottom <= 0 || r.top >= window.innerHeight * 0.75) continue;
-        if (el.closest('.hero')) continue;              // exempt, always opaque
-        arrived++;
-        if (parseFloat(getComputedStyle(el).opacity) >= 0.01){
-          guardSettled = true;                          // the timeline is live
-          return;
-        }
-      }
-      if (!arrived) return;                             // nothing to judge yet
-      guardSettled = true;
-      document.documentElement.classList.add('reveal-fallback');
-      revealEls.forEach(el => el.classList.add('is-visible'));
-    };
-    setTimeout(guard, 1200);
-    onScroll(guard);
-  } else if (revealEls.length && 'IntersectionObserver' in window && !reduceMotion){
+  if (revealEls.length && 'IntersectionObserver' in window && !reduceMotion){
     const io = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting){
@@ -208,45 +86,26 @@ document.addEventListener('DOMContentLoaded', () => {
   ribbon.className = 'bookmark-ribbon';
   ribbon.setAttribute('aria-hidden', 'true');
   document.body.appendChild(ribbon);
-  /* The ribbon used to measure the volume on every scrolled frame:
-     reading scrollHeight with a style write already queued forces the
-     browser to lay out the entire document again, 60 times a second, on
-     the one thread the phone needs for the gesture. The extent is a
-     property of the document, not of the scroll — so it is measured when
-     the document actually changes, and the ribbon then only writes when
-     its rounded height genuinely moves. */
-  let extent = 0, ribbonPx = -1, viewH = window.innerHeight;
-  const measure = () => {
-    viewH = window.innerHeight;
-    extent = document.documentElement.scrollHeight - viewH;
+  let ribbonTick = false;
+  const setRibbon = () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+    ribbon.style.height = Math.max(34, p * window.innerHeight) + 'px';
+    ribbonTick = false;
   };
-  const setRibbon = y => {
-    const p = extent > 0 ? Math.min(1, y / extent) : 0;
-    const px = Math.round(Math.max(34, p * viewH));
-    if (px !== ribbonPx){ ribbonPx = px; ribbon.style.height = px + 'px'; }
-  };
-  measure();
-  onScroll(setRibbon);
-  onResize(() => { measure(); setRibbon(window.scrollY); });
-  /* content-visibility lets long chapters settle in at their true height
-     after first paint, so the extent is re-read when the sheet grows */
-  if ('ResizeObserver' in window){
-    new ResizeObserver(() => { measure(); setRibbon(window.scrollY); })
-      .observe(document.documentElement);
-  }
+  setRibbon();
+  window.addEventListener('scroll', () => {
+    if (!ribbonTick){ requestAnimationFrame(setRibbon); ribbonTick = true; }
+  }, { passive: true });
+  window.addEventListener('resize', setRibbon);
 
-  /* ---- Exhibit placard — names the section currently under glass -------
-     The placard needs a desk: the stylesheet hides it below 900px. Below
-     that width the script does not build it either — an observer on every
-     section of the document, waking on each scrolled frame to caption a
-     panel nobody can see, is pure cost on a phone. */
-  const placardRoom = window.innerWidth >= 901;
+  /* ---- Exhibit placard — names the section currently under glass ---- */
   const placard = document.createElement('div');
   placard.className = 'page-placard';
   placard.setAttribute('aria-hidden', 'true');
-  if (placardRoom) document.body.appendChild(placard);
+  document.body.appendChild(placard);
   const placardTargets = [];
-  if (placardRoom) document.querySelectorAll('section, article.folio').forEach(el => {
+  document.querySelectorAll('section, article.folio').forEach(el => {
     let text = '';
     if (el.matches('.folio')){
       const no = el.querySelector('.folio-no');
@@ -313,41 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /* ---- The next gathering, already on the desk -------------------------
-     After the leaf comes the other half of the wait: the network. The
-     whole volume is five small HTML files, and by the time a reader has
-     any link in front of them the stylesheet and the script are already
-     cached — so the remaining chapters cost almost nothing to fetch. Once
-     the browser is idle they are fetched, and a tap then turns to a page
-     that is already local. Hand-held only: this spends a little of a
-     phone's data to buy back the pause the reader actually feels. */
-  if (handHeld){
-    /* An idle callback with no deadline never runs while the page is
-       hidden — open the volume in a background tab and the prefetch would
-       simply never happen. The deadline makes it yield to the critical
-       path without ever being dropped. */
-    const idle = window.requestIdleCallback
-      ? fn => window.requestIdleCallback(fn, { timeout: 2500 })
-      : fn => setTimeout(fn, 1500);
-    idle(() => {
-      const l = document.createElement('link');
-      const canPrefetch = l.relList && l.relList.supports && l.relList.supports('prefetch');
-      ['index.html', 'about.html', 'projects.html', 'blog.html', 'contact.html']
-        .forEach(p => {
-          if (p === path) return;
-          if (canPrefetch){
-            const tag = document.createElement('link');
-            tag.rel = 'prefetch';
-            tag.href = p;
-            document.head.appendChild(tag);
-          } else {
-            /* Safari has no prefetch; a plain read warms the same cache */
-            fetch(p, { credentials: 'same-origin' }).catch(() => {});
-          }
-        });
-    });
-  }
-
   /* ---- Turning the leaf — a sheet is drawn over the page between chapters ---- */
   const leaf = document.createElement('div');
   leaf.className = 'page-leaf';
@@ -362,14 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'blog.html':     'Chapter III — Fields of Inquiry',
     'contact.html':  'Chapter IV — Correspondence'
   };
-  /* Where the browser turns the leaf itself, the script must not: intercepting
-     the click to hold a sheet on screen is precisely the wait being removed,
-     and a scripted cover would be what the transition snapshotted. The signal
-     is `onpagereveal`, which shipped with cross-document view transitions —
-     the same-document API predates them by many versions and would answer yes
-     too early. */
-  const browserTurnsTheLeaf = handHeld && 'onpagereveal' in window;
-  if (!reduceMotion && !browserTurnsTheLeaf){
+  if (!reduceMotion){
     document.querySelectorAll('a[href$=".html"]').forEach(a => {
       const href = a.getAttribute('href');
       if (!href || href.startsWith('http')) return;
@@ -378,13 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         leafLabel.textContent = chapterOf[href.split('/').pop()] || 'Turning…';
         leaf.classList.add('is-covering');
-        /* The leaf is a held breath before the next chapter. On a desk it
-           is ceremony; in the hand it is the whole of the wait between a
-           tap and a response, and it reads as the site being slow. The
-           phone turns the leaf in a little over a third of the time —
-           the stylesheet shortens the sweep to match, so the turn still
-           completes rather than being cut off mid-sheet. */
-        setTimeout(() => { location.href = href; }, handHeld ? 190 : 430);
+        setTimeout(() => { location.href = href; }, 430);
       });
     });
   }
@@ -427,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
      default handler; on many desktops that is unset, so the click does
      nothing. On desktop we open Gmail's web compose in a new tab instead;
      on touch devices we leave the native mailto: alone (it opens the app). */
-  const coarsePointer = coarse;
+  const coarsePointer = matchMedia('(pointer: coarse)').matches;
   if (!coarsePointer){
     document.querySelectorAll('a[href^="mailto:"]').forEach(a => {
       a.addEventListener('click', e => {
@@ -475,16 +286,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(ov);
     document.documentElement.classList.add('is-opening');
     requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-ready')));
-    /* The opening of the volume holds the page for a second and a half and
-       locks scrolling while it does. On a desk that is the ceremony of a
-       book being opened; on a phone it is the first thing the reader meets
-       and it reads as the site being slow to arrive. The hand-held edition
-       performs the same opening at speed — the stylesheet compresses the
-       seal, title and rule to match, so nothing is cut off. */
     setTimeout(() => {
       ov.classList.add('is-lifting');
       document.documentElement.classList.remove('is-opening');
-    }, handHeld ? 700 : 1500);
+    }, 1500);
     ov.addEventListener('transitionend', e => {
       if (e.propertyName === 'transform' && ov.classList.contains('is-lifting')) ov.remove();
     });
@@ -532,25 +337,13 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.id = 'pigment-field';
     canvas.setAttribute('aria-hidden', 'true');
     document.body.prepend(canvas);
-    /* Declares that an opaque painted field now covers the viewport. The
-       stylesheet uses this to drop the vellum wash underneath it on phones:
-       the field is opaque and a negative z-index child paints above its
-       parent's background, so that wash is rasterised across the whole
-       document and never once seen. It cannot be keyed off width alone —
-       under reduced motion this block never runs and the wash is all there
-       is to see. */
-    document.documentElement.classList.add('has-field');
 
     const veil = document.createElement('div');
     veil.className = 'field-veil';
     veil.setAttribute('aria-hidden', 'true');
     document.body.prepend(veil);
 
-    /* The ground is laid opaque across the whole sheet before any stroke
-       is drawn, so the canvas never has a transparent pixel to blend.
-       Telling the phone's compositor that outright lets it skip per-pixel
-       blending of a full-screen layer on every composited frame. */
-    const ctx = canvas.getContext('2d', handHeld ? { alpha: false } : undefined);
+    const ctx = canvas.getContext('2d');
 
     // The pigment cabinet, in both lights: the same pigments by day, and
     // their luminous selves under lamplight — never a mere inversion.
@@ -680,69 +473,21 @@ document.addEventListener('DOMContentLoaded', () => {
        Math.cos(y * 0.0013 - t * 0.00015) +
        Math.sin((x + y) * 0.0007 + t * 0.00022 + shift)) * 0.6;
 
-    /* The visual viewport — the pane the reader is actually looking
-       through, which a pinch moves and scales without the layout viewport
-       changing at all. Nothing in the volume was watching it. */
-    const vv = window.visualViewport;
-    const watchZoom = !!vv && handHeld;
-    let vvHold = false;      // a pinch is in flight; the brush is down
-    let zoomed  = false;     // the reader is magnified; it stays down
-    const magnified = () => watchZoom && vv.scale > 1.01;
-
-    let compact = handHeld;
     const resize = () => {
       W = window.innerWidth; H = window.innerHeight;
       /* the hand-held edition paints with a lighter brush: lower pixel
          density and fewer strokes keep the phone's scroll perfectly fluid
          while the painting reads identically at that size */
-      compact = coarsePointer || W < 700;
+      const compact = coarsePointer || W < 700;
       DPR = Math.min(compact ? 1 : 1.75, window.devicePixelRatio || 1);
       canvas.width = W * DPR; canvas.height = H * DPR;
       canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       paintGround();
       ctx.drawImage(ground, 0, 0, W, H);
-      const target = Math.min(compact ? 140 : 560, Math.round(W * H / (compact ? 5600 : 2600)));
+      const target = Math.min(compact ? 200 : 560, Math.round(W * H / (compact ? 4200 : 2600)));
       particles = [];
       for (let i = 0; i < target; i++) particles.push(spawn());
-    };
-
-    /* ---- The sheet that only seems to change size -----------------------
-       Scrolling a phone hides the URL bar, and hiding the URL bar fires
-       resize. The old handler answered each one by re-grounding the sheet
-       (eleven full-screen gradient fills) and re-spawning every stroke —
-       hundreds of allocations — in the middle of the gesture that caused
-       it, over and over. A moved browser chrome is not a new page: the
-       sheet is simply re-stretched, the existing painting carried across
-       it, and the strokes left mid-flight. Only a real change of shape —
-       a rotation, a resized window — earns a rebuild. */
-    const scratch = document.createElement('canvas');
-    let lastW = 0, lastH = 0;
-    const reshape = () => {
-      /* Some phone browsers report a resize while pinching. A pinch is not
-         a new page and must never re-ground the sheet: that is the most
-         expensive work in the file, landing in the middle of the most
-         raster-bound gesture the browser has. */
-      if (magnified()) return;
-      const w = window.innerWidth, h = window.innerHeight;
-      if (compact && w === lastW && h !== lastH && Math.abs(h - lastH) < 220){
-        W = w; H = h;
-        /* carry the underpainting onto the taller sheet through one
-           scratch surface — resizing a canvas is what clears it */
-        const s = scratch.getContext('2d');
-        scratch.width = ground.width; scratch.height = ground.height;
-        s.drawImage(ground, 0, 0);
-        ground.width = Math.max(1, W); ground.height = Math.max(1, H);
-        ground.getContext('2d').drawImage(scratch, 0, 0, W, H);
-        canvas.width = W * DPR; canvas.height = H * DPR;
-        canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-        ctx.drawImage(ground, 0, 0, W, H);
-        lastH = h;
-        return;
-      }
-      lastW = w; lastH = h;
-      resize();
     };
 
     /* On touch devices the painting yields entirely: it rests while the
@@ -750,131 +495,16 @@ document.addEventListener('DOMContentLoaded', () => {
        rate between gestures. Nothing competes with the thumb. */
     let scrolling = false, scrollSettle = 0;
     if (coarsePointer){
-      scrollNow.push(() => {
-        /* once the paint has dried for good, a scroll owes it nothing —
-           not even this pair of timer calls */
-        if (resting) return;
+      window.addEventListener('scroll', () => {
         scrolling = true;
         clearTimeout(scrollSettle);
-        /* Reading is not one long scroll — it is a flick, a pause, a flick.
-           Waking the brush 140ms into every pause meant a full-screen texture
-           upload starting at precisely the moment the thumb was most likely
-           to move again, so the gesture that followed had to fight the paint
-           it had just permitted. The brush waits for a real pause. */
-        scrollSettle = setTimeout(() => { scrolling = false; }, 900);
-      });
+        scrollSettle = setTimeout(() => { scrolling = false; }, 140);
+      }, { passive: true });
     }
-    /* A painting nobody is looking at costs the same as one they are: the
-       loop stops dead when the page is hidden and takes up the brush again
-       on return. Exactly one frame may ever be in flight — a frame already
-       queued when the page was hidden must not become a second loop
-       alongside the one that resumes it. */
-    let running = true, scheduled = false;
-    const pump = () => {
-      if (!running || scheduled) return;
-      scheduled = true;
-      requestAnimationFrame(frame);
-    };
-    document.addEventListener('visibilitychange', () => {
-      running = !document.hidden;
-      if (running) pump();
-    });
-
-    /* ---- Pinch, zoom, and the magnified page ----------------------------
-       A pinch scales the visual viewport while the layout viewport holds
-       still, so it fires neither scroll nor resize: every rest the painting
-       had was blind to it, and the brush kept working a full-screen fixed
-       layer while the browser re-rasterised the entire page at a new scale.
-       That is the whole of the roughness in a zoom gesture.
-
-       So the brush comes down for the gesture — and while the reader stays
-       magnified it does not come back up. A fixed sheet is re-rastered at
-       the zoom factor on every repaint, and someone who has zoomed in has
-       done it to read something, not to watch the paint move. The field
-       simply holds the frame it was on, and resumes on the way out. */
-    if (watchZoom){
-      let vvSettle = 0;
-      /* Away from natural scale the reader is inspecting the page, and
-         chapters deferred by content-visibility are judged against the
-         layout viewport — which a pinch never moves. Pinched out, those
-         blocks sit in the middle of what the reader can plainly see and
-         fill in only as they are reached. So once the gesture settles,
-         a magnified page renders whole: the deferral is worth its cost
-         while reading at natural scale, and not while inspecting. */
-      const offScale = () => Math.abs(vv.scale - 1) > 0.01;
-      const settle = () => {
-        vvHold = false;
-        zoomed = magnified();
-        document.documentElement.classList.toggle('is-magnified', offScale());
-        if (!zoomed) pump();          // parked frames revive here, and only here
-      };
-      const stir = () => {
-        vvHold = true;
-        clearTimeout(vvSettle);
-        vvSettle = setTimeout(settle, 170);
-      };
-      vv.addEventListener('resize', stir, { passive: true });
-      vv.addEventListener('scroll', stir, { passive: true });
-      /* honour a scale the browser restored, without starting the loop here
-         — the brush is taken up once, at the foot of this block */
-      zoomed = magnified();
-      document.documentElement.classList.toggle('is-magnified', offScale());
-    }
-
-    /* ---- The painting dries ---------------------------------------------
-       A full-screen layer whose pixels keep changing is work the phone
-       never stops doing: a texture upload every painted frame, a GPU kept
-       warm, and a thermal budget spent on paint drifting behind text that
-       is being read — which eventually throttles the very scrolling it was
-       tuned around.
-
-       The last edition re-wet the paint on every scroll and touch, six
-       seconds at a time. But reading is a flick, a pause, a flick: under
-       that rule the painting was wet through nearly the whole visit, and
-       every pause bought a texture upload just as the thumb came back.
-       Alive when met, still while read — re-wetting on touch honoured the
-       first half and broke the second.
-
-       Now the paint behaves like paint. It is wet when the reader arrives,
-       long enough to watch it settle; then it dries, completely and for
-       good — the loop parks, the frame it reached becomes the ground the
-       whole visit rests on, and no rAF chain so much as idles behind the
-       scroll. Only a change of light re-inks the sheet: the eclipse repaints
-       the ground in the other cabinet, and the brush works just long enough
-       to lay strokes into it before drying again. The desk edition paints
-       without pause, as before. */
-    let resting = false, settleTimer = 0;
-    if (handHeld){
-      const dry = () => { resting = true; };
-      const wet = ms => {
-        resting = false;
-        clearTimeout(settleTimer);
-        settleTimer = setTimeout(dry, ms);
-        pump();                       // parked frames revive here
-      };
-      wet(6000);                                              // alive when met
-      window.addEventListener('sk-theme', () => wet(4000));   // re-inked by the eclipse
-    }
-    /* the impasto threshold: raking light only ever showed on a loaded
-       brush, so on the phone only the broadest strokes carry the three
-       passes and the rest are laid in one — the relief the eye actually
-       reads, at a third of the draw calls */
-    const relief = handHeld ? 1.9 : 1.4;
     let tick = 0, beat = 0;
     const frame = ts => {
-      scheduled = false;
-      if (!running) return;
-      /* parked: settle() and wet() are what bring the brush back */
-      if (vvHold || zoomed || resting) return;
       if (coarsePointer){
-        /* A full-screen canvas costs the phone far more in the compositor
-           than in this loop: every frame whose pixels change re-uploads the
-           whole sheet as a texture, and that never shows up in a profile of
-           the drawing. The strokes themselves measure in tenths of a
-           millisecond, so the saving worth having is simply painting less
-           often. The phone takes one frame in four for a current that
-           drifts this slowly. */
-        if (scrolling || (beat++ & 3)){ pump(); return; }
+        if (scrolling || (beat++ & 1)){ requestAnimationFrame(frame); return; }
       }
       shift += (targetShift - shift) * 0.04;
       ctx.globalCompositeOperation = 'source-over';
@@ -882,10 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
          flatness. Blitting the ground is the single costliest op of the
          frame, so it runs every second painted frame at doubled strength
          — the same fade rate for half the compositing work. */
-      if (coarsePointer || (tick++ & 1) === 0){
-        /* The desk blits every second painted frame; the phone now paints
-           half as often, so it blits every painted frame — the same number
-           of blits a second, and therefore exactly the same rate of fade. */
+      if ((tick++ & 1) === 0){
         ctx.globalAlpha = coarsePointer ? 0.07 : 0.038;
         ctx.drawImage(ground, 0, 0, W, H);
         ctx.globalAlpha = 1;
@@ -908,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         /* loaded strokes get the full impasto (shadow, body, lit crest);
            hairline strokes take a single pass — half the draw cost, and
            relief only ever showed on the loaded brush anyway */
-        if (p.w > relief){
+        if (p.w > 1.4){
           ctx.strokeStyle = p.cs;
           ctx.lineWidth = p.w + 0.5;
           ctx.beginPath(); ctx.moveTo(p.px + 0.8, p.py + 1); ctx.lineTo(p.x + 0.8, p.y + 1); ctx.stroke();
@@ -916,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.strokeStyle = p.cb;
         ctx.lineWidth = p.w;
         ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(p.x, p.y); ctx.stroke();
-        if (p.w > relief){
+        if (p.w > 1.4){
           ctx.strokeStyle = p.cl;
           ctx.lineWidth = Math.max(0.5, p.w * 0.38);
           ctx.beginPath(); ctx.moveTo(p.px - 0.6, p.py - 0.8); ctx.lineTo(p.x - 0.6, p.y - 0.8); ctx.stroke();
@@ -925,14 +552,14 @@ document.addEventListener('DOMContentLoaded', () => {
           Object.assign(p, spawn());
         }
       }
-      pump();
+      requestAnimationFrame(frame);
     };
 
     // the field is fixed to the viewport, so pointer coords map directly
     const track = e => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true; };
     if (finePointer) window.addEventListener('pointermove', track, { passive: true });
     window.addEventListener('blur', () => { mouse.active = false; });
-    onScroll(y => { targetShift = y * 0.0006; });
+    window.addEventListener('scroll', () => { targetShift = window.scrollY * 0.0006; }, { passive: true });
 
     /* The dip — as the reader settles on a folio, essay or section, freshly
        spawned strokes take that plate's own pigment, so the field slowly
@@ -946,24 +573,11 @@ document.addEventListener('DOMContentLoaded', () => {
       m = s.match(/^rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/);
       return m ? [+m[1], +m[2], +m[3]] : null;
     };
-    /* A section's pigment is fixed by the stylesheet until the light of
-       the whole volume changes, so it is read from the CSS once and kept
-       on the element. Asking for a computed style is asking the browser
-       to resolve style right now — and this observer fires while the
-       reader's thumb is moving, which is exactly when it must not. */
-    let pigEpoch = 0;
-    const pigCache = new WeakMap();
     const pigOf = el => {
-      const held = pigCache.get(el);
-      if (held && held.epoch === pigEpoch) return held.col;
       const own = parseCol(getComputedStyle(el).getPropertyValue('--pig'));
-      let col = own;
-      if (!col){
-        const n = el.querySelector('.folio-no, .essay-no, .label .num');
-        col = n ? parseCol(getComputedStyle(n).color) : null;
-      }
-      pigCache.set(el, { epoch: pigEpoch, col });
-      return col;
+      if (own) return own;
+      const n = el.querySelector('.folio-no, .essay-no, .label .num');
+      return n ? parseCol(getComputedStyle(n).color) : null;
     };
     if ('IntersectionObserver' in window){
       const dio = new IntersectionObserver(entries => {
@@ -976,11 +590,10 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.folio, .essay, section').forEach(el => dio.observe(el));
     }
 
-    lastW = window.innerWidth; lastH = window.innerHeight;
     resize();
-    onResize(reshape);
-    window.addEventListener('sk-theme', () => { pigEpoch++; setCabinet(); resize(); });
-    pump();
+    window.addEventListener('resize', resize);
+    window.addEventListener('sk-theme', () => { setCabinet(); resize(); });
+    requestAnimationFrame(frame);
   }
 
   /* ---- IV. The plates lift and take their pigment as you approach ----- */
@@ -1034,13 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
       canon.appendChild(p);
     });
     hero.appendChild(canon);
-    /* The ruling draws itself across the full height of the hero, then
-       sinks to .07 opacity and stays there. Animating stroke-dashoffset
-       cannot be composited, so those first seconds repaint the viewport
-       every frame — precisely the seconds the reader is first scrolling.
-       On the phone the scribe has already ruled the sheet: it opens in
-       its resting state, which is what the page looks like regardless. */
-    if (reduceMotion || handHeld){
+    if (reduceMotion){
       canon.classList.add('is-drawn', 'is-resting');
     } else {
       requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -1068,12 +675,8 @@ document.addEventListener('DOMContentLoaded', () => {
       '<circle class="mv-berry" cx="34" cy="348" r="2.8"/>' +
       '<circle class="mv-berry" cx="34" cy="474" r="3.2"/>' +
     '</svg>';
-  /* the vine climbs an outer margin, and only a desk-width sheet has one:
-     the stylesheet shows it from 1080px up. Below that the illumination
-     was being built, style-sampled and observed entirely out of sight —
-     some hundred SVG nodes per page the phone paid to keep and never drew. */
   const vines = [];
-  if (window.innerWidth >= 1080) document.querySelectorAll('.section').forEach(sec => {
+  document.querySelectorAll('.section').forEach(sec => {
     const wrap = sec.querySelector(':scope > .wrap');
     if (!wrap) return;
     const holder = document.createElement('div');
@@ -1170,30 +773,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!reduceMotion && !coarsePointer) vol.classList.add('is-live');
     const hand = vol.querySelector('.vol-hand');
     const timeText = vol.querySelector('.vol-time');
-    let lastAng = '';
     const setClock = () => {
       const n = new Date();
       const ang = ((n.getHours() % 12) + n.getMinutes() / 60 + n.getSeconds() / 3600) / 12 * 360;
-      const a = ang.toFixed(2);
-      if (a !== lastAng){ lastAng = a; hand.setAttribute('transform', 'rotate(' + a + ' 150 150)'); }
+      hand.setAttribute('transform', 'rotate(' + ang.toFixed(2) + ' 150 150)');
       const t = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
       if (timeText.textContent !== t) timeText.textContent = t;
     };
     setClock();
-    /* A single-handed dial moves half a degree an hour: waking every
-       second to rewrite an SVG transform — which re-renders the whole
-       engraved instrument — buys nothing an eye can see. The desk keeps
-       its second-by-second truth; the phone keeps the same hour for a
-       fraction of the wake-ups, and stops entirely in the background. */
-    let clockTimer = 0;
-    const clockBeat = () => {
-      clearInterval(clockTimer);
-      if (document.hidden) return;
-      setClock();
-      clockTimer = setInterval(setClock, handHeld ? 20000 : 1000);
-    };
-    clockBeat();
-    document.addEventListener('visibilitychange', clockBeat);
+    setInterval(setClock, 1000);
   }
 
   /* ---- VIII. The heliotrope — sun and moon over the archive -----------

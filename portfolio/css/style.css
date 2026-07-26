@@ -6,13 +6,7 @@
    Colours are orchestrated, not scattered: each plate takes its own pigment.
    ========================================================================= */
 
-/* The four families are requested from the document head, not from here.
-   An @import cannot begin until this stylesheet has been fetched and parsed,
-   which put the type behind three strictly serialised round trips: this file,
-   then the font stylesheet, then the font files themselves. In the head the
-   preload scanner sees the request in the first parse of the HTML and opens it
-   alongside this file, and the two origins are pre-connected before either is
-   needed. Same type, one whole round trip earlier. */
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Fragment+Mono:ital@0;1&family=Marcellus&display=swap');
 
 :root{
   /* ---- Ground — eau-de-nil daylight (rare celadon; no beige/grey/white) */
@@ -1846,60 +1840,6 @@ html[data-theme='dark'] .page-leaf::before{
   .press-stamp .stamp-ring{ animation:none; }
   .orb-moon .moon-halo{ animation:none; }
   .volvelle .vol-outer, .volvelle .vol-mid{ animation:none !important; }
-  /* The solar instrument sits in the fixed nav — the one element on screen
-     for the whole visit. Transforms on SVG groups are not composited, so
-     these three endless rotations repainted it behind every frame of every
-     scroll, for a crown that turns once in seventy seconds. The moon's
-     halo was already stilled here; the sun keeps it company. */
-  .theme-orb .sun-rays,
-  .theme-orb .sun-corona,
-  .theme-orb .sun-orbit{ animation:none; }
-  .orb-moon .moon-stars circle{ animation:none; opacity:.7; }
-  /* the ribbon's growth is confined to itself, so the phone never widens
-     the reflow beyond an 8px strip */
-  .bookmark-ribbon{ contain:strict; }
-  /* The turning leaf is a full-screen sheet carrying a radial gradient and
-     a 60px blurred shadow. Parked off the bottom by a transform it is
-     still a live composited layer — rasterised and held in GPU memory for
-     the whole visit, on every page — to serve an animation that lasts
-     460ms. Phones are fill-rate bound before they are anything else, so
-     it now exists only while the leaf is actually being turned. */
-  .page-leaf{ visibility:hidden; }
-  .page-leaf.is-covering{ visibility:visible; }
-
-  /* ---- A ground that was never once seen -------------------------------
-     The vellum wash is eight radial gradients, five of them sized in
-     percentages — so with the fixed attachment traded away for phones they
-     resolve against the whole document rather than the viewport, and the
-     largest becomes 507 x 14,812px. On the home page that is 4.4 million
-     pixels of gradient stack.
-
-     None of it is ever visible. The painted field above it is opaque —
-     every pixel alpha 255 — it covers the viewport exactly, and a negative
-     z-index child paints above its parent's background. So where the field
-     is present the wash simply goes; the paper colour beneath it stays, and
-     the page looks identical. Keyed to the field itself, never to width:
-     under reduced motion the field is never built and the wash is then the
-     only ground there is. */
-  html.has-field body,
-  html.has-field[data-theme='dark'] body{ background-image:none; }
-
-  /* ---- The volume opens and turns at the speed of a hand ---------------
-     The script shortens the two waits the reader actually feels — the
-     opening, and the leaf before each chapter. The durations here are
-     compressed to match, so both still play out in full rather than being
-     cut off partway. Same choreography, same order, less waiting. */
-  .page-leaf{ transition-duration:.2s; }
-  .page-leaf .leaf-label{ transition:opacity .12s .04s, transform .12s .04s; }
-  #opening{ transition-duration:.42s; }
-  #opening .op-seal{
-    transition:opacity .3s var(--ease), transform .34s var(--ease);
-  }
-  #opening .op-title{
-    transition:opacity .3s .04s var(--ease), transform .3s .04s var(--ease);
-  }
-  #opening .op-sub{ transition:opacity .3s .12s var(--ease); }
-  #opening .op-rule{ transition:width .38s .06s var(--ease); }
 }
 /* the scrolled nav trades backdrop sampling for a settled solid tone */
 @media (max-width: 700px){
@@ -1931,25 +1871,13 @@ html[data-theme='dark'] .page-leaf::before{
   /* long chapters render only what approaches the eye */
   .folio, .essay, .prose, .dossier{
     content-visibility:auto;
-    /* measured: folio 833, essay 809-824, prose 820-821, dossier 793.
-       An estimate short by a hundred pixels a block understates the volume
-       by a screen or more, which is what makes the ribbon and the contents
-       links disagree with the page until everything has been visited. */
-    contain-intrinsic-size:auto 820px;
+    contain-intrinsic-size:auto 720px;
   }
   .bookmark-ribbon{ box-shadow:none; }
 }
 @media (max-width: 900px){
   /* fixed-attachment gradients are a known phone scroll-jank source */
   body, html[data-theme='dark'] body{ background-attachment:scroll; }
-}
-/* The nav is fixed and always on screen, so a backdrop-filter on it makes
-   the phone re-sample and re-blur the region behind it on every scrolled
-   frame. The rule above used to reach phones too and, sitting later in the
-   sheet, quietly overrode the settled tone set for them at 700px — the
-   most expensive effect in the stylesheet, reinstated by cascade order.
-   It now stops where the small tablet stops. */
-@media (min-width: 701px) and (max-width: 900px){
   .site-nav.is-scrolled,
   html[data-theme='dark'] .site-nav.is-scrolled{ backdrop-filter:blur(8px); }
 }
@@ -1980,209 +1908,7 @@ html[data-theme='dark'] .page-leaf::before{
   }
   .wax-seal:hover, .wax-seal:active{ transform:rotate(-6deg) scale(.96); }
 }
-/* ---- The hand, at any width --------------------------------------------
-   A large phone or a small tablet sits above the 700px cascade but still
-   carries a phone's GPU, memory and thermal budget. Gathered here is what
-   is pure overhead rather than look — compositor layers held open for
-   animations that have already finished, and chapters rasterised long
-   before they approach the screen. A desk never matches this block, so the
-   desk edition is untouched.                                              */
-@media (hover: none) and (max-width: 1024px){
-  /* will-change keeps a live GPU layer per element for the whole visit;
-     the reveal needs one for a second. Browsers promote on demand — the
-     hint only pays for itself when the property is about to change. */
-  [data-reveal]{ will-change:auto; }
-  #opening{ will-change:auto; }
-  /* transitioning a blur over large blocks is the costliest reveal there
-     is, and the hand-held edition already reads without it below 700px */
-  [data-reveal]{ filter:none; }
-  /* In the hand the reveal is a fade and nothing else — as it already was
-     below 700px. It also has to be: the timeline animation below carries
-     opacity only, so a block left holding its 26px offset would never come
-     back to rest. */
-  [data-reveal]{ transform:none; }
-
-  /* ---- What is actually left: rasterising glyphs ------------------------
-     Everything that can be measured here is already cheap — full-document
-     layout 0.3ms, the ribbon's per-frame write below timer resolution, the
-     script a tenth of a millisecond. What remains is raster, and this volume
-     is thirteen screens of almost nothing but text.
-
-     `optimizeLegibility` asks for full kerning and ligature shaping on every
-     glyph, and it is the documented way to make a text-heavy page expensive
-     to paint on a phone. `auto` still kerns and still applies common
-     ligatures in any browser this site will meet — the same page, decided by
-     the engine rather than demanded of it. */
-  body{ text-rendering:auto; }
-
-  /* A 90px inset blur, drawn the full width and height of a plate — 900px on
-     one, 620px on another — is re-rastered for every tile of it that comes
-     into view. The hairline of caught light above is what reads as polish;
-     the pooled shadow beneath it costs the most and shows the least. The
-     veil's vignette was retired here for exactly this reason. */
-  html[data-theme='dark'] .plate{
-    box-shadow:inset 0 1px 0 rgba(214,226,245,.06);
-  }
-  /* long chapters rasterise as they approach the eye, not all at once */
-  .folio, .essay, .prose, .dossier{
-    content-visibility:auto;
-    /* measured: folio 833, essay 809-824, prose 820-821, dossier 793.
-       An estimate short by a hundred pixels a block understates the volume
-       by a screen or more, which is what makes the ribbon and the contents
-       links disagree with the page until everything has been visited. */
-    contain-intrinsic-size:auto 820px;
-  }
-}
-
-/* =========================================================================
-   THE SHEET REVEALS ITSELF — and so the long chapters can wait
-   The home page is one of each kind of section rather than a list of one
-   repeating kind, so the deferral written for the repeating components
-   (.folio, .essay, .prose, .dossier) caught only 29% of it — leaving 9.6
-   screens to lay out and paint against 2.9 on every page that scrolls
-   smoothly. The section-level blocks are what is left, and they are full of
-   revealed children.
-
-   Those two facts are one problem. An IntersectionObserver never fires for
-   an element inside a subtree the browser has skipped, so deferring these
-   sections while the fades depended on an observer would have left their
-   contents invisible. Handing the fades to a view() timeline removes the
-   dependency: the animation is declarative, computed from the element's own
-   position, and correct the moment a skipped subtree is rendered.
-
-   So the two ship together, inside one @supports. Where a scroll timeline
-   is unavailable, neither applies and the observer keeps its job exactly as
-   before. The matching test in the script must not drift from this one.
-   ========================================================================= */
-@supports (animation-timeline: view()){
-  @media (hover: none) and (max-width: 1024px){
-
-    /* the ink settles as the block arrives, on the compositor, with no
-       observer, no class, and no script on the main thread */
-    [data-reveal]{
-      opacity:0;
-      animation-name:reveal-settle;
-      animation-duration:1ms;          /* ignored on a progress timeline */
-      animation-timing-function:var(--ease, ease);
-      animation-fill-mode:both;
-      animation-timeline:view();
-      animation-range:entry 10% entry 60%;
-      transition:none;                 /* the timeline owns opacity now */
-    }
-    /* The frontispiece is already in view when the volume opens, so it must
-       never wait on a scroll timeline to be legible: an entry range for a
-       block at the very top of the document is a question about scrolling
-       that has not happened, and the first thing the reader sees is not the
-       place to be clever. It is simply present, which is also what it was
-       doing before — and one less thing between arrival and reading. */
-    .hero [data-reveal]{ animation-name:none; opacity:1; }
-
-    /* belt and braces: if anything ever marks a block visible, it stays so */
-    [data-reveal].is-visible{ opacity:1; }
-
-    /* The net the script throws if the timeline never produced a fade. An
-       animation outranks a normal declaration, so it has to be cancelled by
-       name before opacity can be handed back — otherwise the sheet would
-       stay blank however loudly the class asked for it. */
-    html.reveal-fallback [data-reveal]{
-      animation-name:none;
-      opacity:1;
-    }
-
-    /* Now the chapters can wait their turn. Each intrinsic size is the
-       block's real measured height at phone width, so the page's scroll
-       extent is honest before anything has rendered — an estimate that is
-       wrong by a screen makes the contents links land in the wrong place
-       and the ribbon jump. `auto` keeps the true size once it is known. */
-    /* Granularity, not coverage, is what the reader feels. Deferring a block
-       does not spread its cost — it postpones the whole of it into the one
-       frame the block becomes relevant, and spends it again if the reader
-       scrolls back and it has been skipped since. So the size of a deferred
-       block is the size of a hitch.
-
-       The pages that scroll well defer six identical 833px folios — about a
-       viewport each. Deferring this page's sections instead meant blocks of
-       619 to 2203px, up to 2.6 viewports, at wildly uneven cost. Measured
-       against that, full-document layout is 0.3ms whether every section is
-       deferred or none of them are, so the coverage those big blocks bought
-       was worth very little and the spikes were real.
-
-       The uniform inner components are what should wait: a hitch the size of
-       a paragraph rather than the size of a chapter. */
-    .index-item{ content-visibility:auto; contain-intrinsic-size:auto 222px; }
-    .skill-row { content-visibility:auto; contain-intrinsic-size:auto 140px; }
-    .phil-notes{ content-visibility:auto; contain-intrinsic-size:auto 463px; }
-    .footer-col{ content-visibility:auto; contain-intrinsic-size:auto 160px; }
-  }
-}
-/* declared outside the query so the keyframes exist wherever they are used */
-@keyframes reveal-settle{ from{ opacity:0; } to{ opacity:1; } }
-
-/* ---- The magnified page ------------------------------------------------
-   Set on the root while the reader holds the volume away from natural
-   scale. Deferring a chapter's rendering is judged against the layout
-   viewport, which a pinch never moves — so pinched out, deferred chapters
-   sit in plain view and fill in only as they are reached. While the reader
-   is inspecting, the whole sheet renders; the deferral returns with the
-   natural scale. Only the hand-held edition ever carries the class.      */
-@media (max-width: 1024px){
-  html.is-magnified .folio,
-  html.is-magnified .essay,
-  html.is-magnified .prose,
-  html.is-magnified .dossier{
-    content-visibility:visible;
-    contain-intrinsic-size:none;
-  }
-}
-
-/* =========================================================================
-   THE LEAF, TURNED BY THE BROWSER
-   The hand-held edition asks the browser to animate between documents. The
-   volume is five separate files, so every chapter was a hard reload dressed
-   up by a scripted sheet that had to be held on screen before navigation
-   could even begin — the wait was the animation. A cross-document view
-   transition is the same gesture with none of the wait: the browser
-   snapshots the leaf, navigates immediately, and animates on the
-   compositor. Where it is unsupported, nothing here applies and the
-   scripted leaf keeps the job.
-   ========================================================================= */
-@media (hover: none) and (max-width: 1024px){
-  @view-transition{ navigation: auto; }
-
-  /* restrained, and echoing the leaf: the old page gives way, the new one
-     rises the last few pixels into place */
-  ::view-transition-old(root){ animation:leaf-give .16s ease both; }
-  ::view-transition-new(root){ animation:leaf-take .24s ease both; }
-}
-@keyframes leaf-give{ to{ opacity:0; } }
-@keyframes leaf-take{ from{ opacity:0; transform:translateY(10px); } }
-
 /* ---- Touch control — every tap answers like a pressed object ----------- */
-@media (hover: none){
-  /* the browser need not wait to see whether a tap becomes a double-tap
-     zoom before it acts on it — pinch and pan are untouched */
-  a, button, .nav-burger, .theme-orb{ touch-action:manipulation; }
-
-  /* A thumb is about 44px. The menu's own links were 27px tall inside a
-     full-screen overlay with room to spare, so they simply get it.
-     (The burger is 34x22 and cannot be grown this way — it is border-box
-     with a fixed width and height, and the three ruled lines it draws are
-     absolutely positioned against that box, so padding does nothing and
-     resizing would move the glyph. Fixing it means restating the box and
-     re-centring the lines, which changes the nav's metrics — left alone
-     deliberately rather than half-done.) */
-  .mobile-menu a{ padding-block:9px; }
-
-  /* With the menu open the volume behind it must not move. Thirteen screens
-     were still scrolling under a full-screen overlay, and on iOS the page
-     will bounce behind an overlay even when overflow alone is hidden — so
-     the sheet is pinned, and put back exactly where it was on close. */
-  html.menu-open{ overflow:hidden; }
-  html.menu-open body{
-    position:fixed; left:0; right:0; width:100%;
-    overflow:hidden;
-  }
-}
 @media (hover: none){
   a, button{ -webkit-tap-highlight-color:rgba(156,124,46,.18); }
   .ledger-row:active{ background:linear-gradient(90deg, rgba(224,190,107,.2), transparent 70%); padding-left:12px; }
