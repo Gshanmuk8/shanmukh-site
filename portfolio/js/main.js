@@ -727,7 +727,12 @@ document.addEventListener('DOMContentLoaded', () => {
       scrollNow.push(() => {
         scrolling = true;
         clearTimeout(scrollSettle);
-        scrollSettle = setTimeout(() => { scrolling = false; }, 140);
+        /* Reading is not one long scroll — it is a flick, a pause, a flick.
+           Waking the brush 140ms into every pause meant a full-screen texture
+           upload starting at precisely the moment the thumb was most likely
+           to move again, so the gesture that followed had to fight the paint
+           it had just permitted. The brush now waits for a real pause. */
+        scrollSettle = setTimeout(() => { scrolling = false; }, 900);
       });
     }
     /* A painting nobody is looking at costs the same as one they are: the

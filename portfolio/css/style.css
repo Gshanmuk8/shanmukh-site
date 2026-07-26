@@ -1925,7 +1925,11 @@ html[data-theme='dark'] .page-leaf::before{
   /* long chapters render only what approaches the eye */
   .folio, .essay, .prose, .dossier{
     content-visibility:auto;
-    contain-intrinsic-size:auto 720px;
+    /* measured: folio 833, essay 809-824, prose 820-821, dossier 793.
+       An estimate short by a hundred pixels a block understates the volume
+       by a screen or more, which is what makes the ribbon and the contents
+       links disagree with the page until everything has been visited. */
+    contain-intrinsic-size:auto 820px;
   }
   .bookmark-ribbon{ box-shadow:none; }
 }
@@ -1991,10 +1995,36 @@ html[data-theme='dark'] .page-leaf::before{
      opacity only, so a block left holding its 26px offset would never come
      back to rest. */
   [data-reveal]{ transform:none; }
+
+  /* ---- What is actually left: rasterising glyphs ------------------------
+     Everything that can be measured here is already cheap — full-document
+     layout 0.3ms, the ribbon's per-frame write below timer resolution, the
+     script a tenth of a millisecond. What remains is raster, and this volume
+     is thirteen screens of almost nothing but text.
+
+     `optimizeLegibility` asks for full kerning and ligature shaping on every
+     glyph, and it is the documented way to make a text-heavy page expensive
+     to paint on a phone. `auto` still kerns and still applies common
+     ligatures in any browser this site will meet — the same page, decided by
+     the engine rather than demanded of it. */
+  body{ text-rendering:auto; }
+
+  /* A 90px inset blur, drawn the full width and height of a plate — 900px on
+     one, 620px on another — is re-rastered for every tile of it that comes
+     into view. The hairline of caught light above is what reads as polish;
+     the pooled shadow beneath it costs the most and shows the least. The
+     veil's vignette was retired here for exactly this reason. */
+  html[data-theme='dark'] .plate{
+    box-shadow:inset 0 1px 0 rgba(214,226,245,.06);
+  }
   /* long chapters rasterise as they approach the eye, not all at once */
   .folio, .essay, .prose, .dossier{
     content-visibility:auto;
-    contain-intrinsic-size:auto 720px;
+    /* measured: folio 833, essay 809-824, prose 820-821, dossier 793.
+       An estimate short by a hundred pixels a block understates the volume
+       by a screen or more, which is what makes the ribbon and the contents
+       links disagree with the page until everything has been visited. */
+    contain-intrinsic-size:auto 820px;
   }
 }
 
@@ -2058,14 +2088,25 @@ html[data-theme='dark'] .page-leaf::before{
        extent is honest before anything has rendered — an estimate that is
        wrong by a screen makes the contents links land in the wrong place
        and the ribbon jump. `auto` keeps the true size once it is known. */
-    #glance         { content-visibility:auto; contain-intrinsic-size:auto 1295px; }
-    #philosophy     { content-visibility:auto; contain-intrinsic-size:auto 1080px; }
-    #instruments    { content-visibility:auto; contain-intrinsic-size:auto 1560px; }
-    #practice       { content-visibility:auto; contain-intrinsic-size:auto 1321px; }
-    #plates         { content-visibility:auto; contain-intrinsic-size:auto 2381px; }
-    #schooling      { content-visibility:auto; contain-intrinsic-size:auto 1315px; }
-    #correspondence { content-visibility:auto; contain-intrinsic-size:auto  800px; }
-    .site-footer    { content-visibility:auto; contain-intrinsic-size:auto 1211px; }
+    /* Granularity, not coverage, is what the reader feels. Deferring a block
+       does not spread its cost — it postpones the whole of it into the one
+       frame the block becomes relevant, and spends it again if the reader
+       scrolls back and it has been skipped since. So the size of a deferred
+       block is the size of a hitch.
+
+       The pages that scroll well defer six identical 833px folios — about a
+       viewport each. Deferring this page's sections instead meant blocks of
+       619 to 2203px, up to 2.6 viewports, at wildly uneven cost. Measured
+       against that, full-document layout is 0.3ms whether every section is
+       deferred or none of them are, so the coverage those big blocks bought
+       was worth very little and the spikes were real.
+
+       The uniform inner components are what should wait: a hitch the size of
+       a paragraph rather than the size of a chapter. */
+    .index-item{ content-visibility:auto; contain-intrinsic-size:auto 222px; }
+    .skill-row { content-visibility:auto; contain-intrinsic-size:auto 140px; }
+    .phil-notes{ content-visibility:auto; contain-intrinsic-size:auto 463px; }
+    .footer-col{ content-visibility:auto; contain-intrinsic-size:auto 160px; }
   }
 }
 /* declared outside the query so the keyframes exist wherever they are used */
