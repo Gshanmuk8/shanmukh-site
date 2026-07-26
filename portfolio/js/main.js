@@ -510,15 +510,39 @@ document.addEventListener('DOMContentLoaded', () => {
     let scrolling = false, scrollSettle = 0;
     if (coarsePointer){
       window.addEventListener('scroll', () => {
+        if (brushDown) return;
         scrolling = true;
         clearTimeout(scrollSettle);
         scrollSettle = setTimeout(() => { scrolling = false; }, 140);
       }, { passive: true });
     }
+
+    /* THE PAINT DRIES — hand-held edition only.
+       A full-screen canvas whose pixels keep changing re-uploads the whole
+       sheet to the GPU on every painted frame, for the entire visit, behind
+       text that is being read — and it woke again 140ms into every pause,
+       exactly as the thumb came back. On phones the painting now runs long
+       enough to lay itself in, then stops for good: the frame it reached
+       becomes the page's ground. A theme change repaints and settles again.
+       Nothing is ever hidden by this — worst case is a still painting.
+       The desk edition paints without pause, exactly as before. */
+    const handHeld = coarsePointer || window.innerWidth < 700;
+    let brushDown = false, brushTimer = 0, queued = false;
+    const restBrush = () => {
+      if (!handHeld) return;
+      brushDown = false;
+      clearTimeout(brushTimer);
+      brushTimer = setTimeout(() => { brushDown = true; }, 7000);
+    };
+    /* exactly one frame in flight, so a restart can never double the loop */
+    const pump = () => { if (!queued){ queued = true; requestAnimationFrame(frame); } };
+
     let tick = 0, beat = 0;
     const frame = ts => {
+      queued = false;
+      if (brushDown) return;
       if (coarsePointer){
-        if (scrolling || (beat++ & 1)){ requestAnimationFrame(frame); return; }
+        if (scrolling || (beat++ & 1)){ pump(); return; }
       }
       shift += (targetShift - shift) * 0.04;
       ctx.globalCompositeOperation = 'source-over';
@@ -566,7 +590,7 @@ document.addEventListener('DOMContentLoaded', () => {
           Object.assign(p, spawn());
         }
       }
-      requestAnimationFrame(frame);
+      pump();
     };
 
     // the field is fixed to the viewport, so pointer coords map directly
@@ -605,9 +629,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     resize();
-    window.addEventListener('resize', resize);
-    window.addEventListener('sk-theme', () => { setCabinet(); resize(); });
-    requestAnimationFrame(frame);
+    let lastW = window.innerWidth, lastH = window.innerHeight;
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth, h = window.innerHeight;
+      /* Chrome's URL bar collapsing mid-scroll fires resize. Rebuilding the
+         whole painting — eleven full-screen gradient fills and every stroke
+         respawned — in the middle of the gesture that caused it is a visible
+         hitch on every direction change near the top of the page. A moved
+         browser chrome is not a new page: the sheet is stretched the few
+         missing pixels and left alone. A real reshape still rebuilds. */
+      if ((coarsePointer || w < 700) && w === lastW && Math.abs(h - lastH) < 220){
+        lastH = h;
+        canvas.style.height = h + 'px';
+        return;
+      }
+      lastW = w; lastH = h;
+      resize();
+    });
+    window.addEventListener('sk-theme', () => { setCabinet(); resize(); restBrush(); pump(); });
+    restBrush();
+    pump();
   }
 
   /* ---- IV. The plates lift and take their pigment as you approach ----- */
