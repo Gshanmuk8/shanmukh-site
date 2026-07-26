@@ -1861,6 +1861,23 @@ html[data-theme='dark'] .page-leaf::before{
   .page-leaf{ visibility:hidden; }
   .page-leaf.is-covering{ visibility:visible; }
 
+  /* ---- A ground that was never once seen -------------------------------
+     The vellum wash is eight radial gradients, five of them sized in
+     percentages — so with the fixed attachment traded away for phones they
+     resolve against the whole document rather than the viewport, and the
+     largest becomes 507 x 14,812px. On the home page that is 4.4 million
+     pixels of gradient stack.
+
+     None of it is ever visible. The painted field above it is opaque —
+     every pixel alpha 255 — it covers the viewport exactly, and a negative
+     z-index child paints above its parent's background. So where the field
+     is present the wash simply goes; the paper colour beneath it stays, and
+     the page looks identical. Keyed to the field itself, never to width:
+     under reduced motion the field is never built and the wash is then the
+     only ground there is. */
+  html.has-field body,
+  html.has-field[data-theme='dark'] body{ background-image:none; }
+
   /* ---- The volume opens and turns at the speed of a hand ---------------
      The script shortens the two waits the reader actually feels — the
      opening, and the leaf before each chapter. The durations here are
@@ -1969,12 +1986,90 @@ html[data-theme='dark'] .page-leaf::before{
   /* transitioning a blur over large blocks is the costliest reveal there
      is, and the hand-held edition already reads without it below 700px */
   [data-reveal]{ filter:none; }
+  /* In the hand the reveal is a fade and nothing else — as it already was
+     below 700px. It also has to be: the timeline animation below carries
+     opacity only, so a block left holding its 26px offset would never come
+     back to rest. */
+  [data-reveal]{ transform:none; }
   /* long chapters rasterise as they approach the eye, not all at once */
   .folio, .essay, .prose, .dossier{
     content-visibility:auto;
     contain-intrinsic-size:auto 720px;
   }
 }
+
+/* =========================================================================
+   THE SHEET REVEALS ITSELF — and so the long chapters can wait
+   The home page is one of each kind of section rather than a list of one
+   repeating kind, so the deferral written for the repeating components
+   (.folio, .essay, .prose, .dossier) caught only 29% of it — leaving 9.6
+   screens to lay out and paint against 2.9 on every page that scrolls
+   smoothly. The section-level blocks are what is left, and they are full of
+   revealed children.
+
+   Those two facts are one problem. An IntersectionObserver never fires for
+   an element inside a subtree the browser has skipped, so deferring these
+   sections while the fades depended on an observer would have left their
+   contents invisible. Handing the fades to a view() timeline removes the
+   dependency: the animation is declarative, computed from the element's own
+   position, and correct the moment a skipped subtree is rendered.
+
+   So the two ship together, inside one @supports. Where a scroll timeline
+   is unavailable, neither applies and the observer keeps its job exactly as
+   before. The matching test in the script must not drift from this one.
+   ========================================================================= */
+@supports (animation-timeline: view()){
+  @media (hover: none) and (max-width: 1024px){
+
+    /* the ink settles as the block arrives, on the compositor, with no
+       observer, no class, and no script on the main thread */
+    [data-reveal]{
+      opacity:0;
+      animation-name:reveal-settle;
+      animation-duration:1ms;          /* ignored on a progress timeline */
+      animation-timing-function:var(--ease, ease);
+      animation-fill-mode:both;
+      animation-timeline:view();
+      animation-range:entry 10% entry 60%;
+      transition:none;                 /* the timeline owns opacity now */
+    }
+    /* The frontispiece is already in view when the volume opens, so it must
+       never wait on a scroll timeline to be legible: an entry range for a
+       block at the very top of the document is a question about scrolling
+       that has not happened, and the first thing the reader sees is not the
+       place to be clever. It is simply present, which is also what it was
+       doing before — and one less thing between arrival and reading. */
+    .hero [data-reveal]{ animation-name:none; opacity:1; }
+
+    /* belt and braces: if anything ever marks a block visible, it stays so */
+    [data-reveal].is-visible{ opacity:1; }
+
+    /* The net the script throws if the timeline never produced a fade. An
+       animation outranks a normal declaration, so it has to be cancelled by
+       name before opacity can be handed back — otherwise the sheet would
+       stay blank however loudly the class asked for it. */
+    html.reveal-fallback [data-reveal]{
+      animation-name:none;
+      opacity:1;
+    }
+
+    /* Now the chapters can wait their turn. Each intrinsic size is the
+       block's real measured height at phone width, so the page's scroll
+       extent is honest before anything has rendered — an estimate that is
+       wrong by a screen makes the contents links land in the wrong place
+       and the ribbon jump. `auto` keeps the true size once it is known. */
+    #glance         { content-visibility:auto; contain-intrinsic-size:auto 1295px; }
+    #philosophy     { content-visibility:auto; contain-intrinsic-size:auto 1080px; }
+    #instruments    { content-visibility:auto; contain-intrinsic-size:auto 1560px; }
+    #practice       { content-visibility:auto; contain-intrinsic-size:auto 1321px; }
+    #plates         { content-visibility:auto; contain-intrinsic-size:auto 2381px; }
+    #schooling      { content-visibility:auto; contain-intrinsic-size:auto 1315px; }
+    #correspondence { content-visibility:auto; contain-intrinsic-size:auto  800px; }
+    .site-footer    { content-visibility:auto; contain-intrinsic-size:auto 1211px; }
+  }
+}
+/* declared outside the query so the keyframes exist wherever they are used */
+@keyframes reveal-settle{ from{ opacity:0; } to{ opacity:1; } }
 
 /* ---- The magnified page ------------------------------------------------
    Set on the root while the reader holds the volume away from natural

@@ -14,6 +14,22 @@ document.addEventListener('DOMContentLoaded', () => {
      never builds. */
   const handHeld     = coarse || window.innerWidth < 701;
 
+  /* ---- Who reveals the sheet ---------------------------------------------
+     Where the browser can run a scroll-driven animation, the reveals are
+     handed to the compositor and this script stops observing anything. That
+     is what makes the long chapters deferrable: an IntersectionObserver
+     never fires for an element inside a subtree the browser has skipped, so
+     while the fades depended on an observer, deferring a section would have
+     left everything inside it invisible. A declarative timeline has no such
+     problem — it is computed from the element's own position.
+
+     This condition must stay identical to the one in the stylesheet. If the
+     two ever disagree, one of them hides the page: the script would decline
+     to observe while the CSS declined to animate. */
+  const REVEAL_MQ = '(hover: none) and (max-width: 1024px)';
+  const cssReveals = matchMedia(REVEAL_MQ).matches &&
+                     CSS.supports('animation-timeline: view()');
+
   /* ---- One scroll pipeline for the whole volume -------------------------
      Four independent handlers used to race each other on every scroll
      event — nav state, bookmark ribbon, the painting's rest flag, the
@@ -97,7 +113,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---- Sections settle in as they enter the viewport ---- */
   const revealEls = document.querySelectorAll('[data-reveal]');
-  if (revealEls.length && 'IntersectionObserver' in window && !reduceMotion){
+  if (cssReveals){
+    /* The stylesheet reveals the sheet on a view() timeline. Nothing is
+       observed, no class is set, and no inline transition delay is written
+       to three dozen elements — the fades run off the main thread entirely,
+       and they keep running inside deferred chapters.
+
+       One promise has to be kept absolutely: something must actually reveal
+       the page. Every block starts at opacity 0, so if a timeline yields no
+       value — an inactive timeline, a half-implementation that answers
+       CSS.supports and then does nothing — the reader would be handed a
+       blank sheet. Cheap insurance: two frames in, a block that is plainly
+       on screen must not be transparent. If it is, the animation is
+       cancelled and the volume is simply shown. */
+    /* The frontispiece is exempt in the stylesheet and always legible, so
+       the reader can never be handed a blank sheet. What remains to guard is
+       the rest of the volume: if the timeline turns out to produce nothing,
+       the chapters below would stay invisible as they are scrolled to.
+
+       So the verdict is taken from blocks that have actually arrived on
+       screen — a block below the fold is *supposed* to be transparent, and
+       proves nothing. The first block that arrives opaque proves the
+       timeline works and retires the guard for good; a screenful that
+       arrives transparent trips it once and simply shows the volume. Either
+       way it stops running, so it never costs the scroll anything. */
+    let guardSettled = false;
+    const guard = () => {
+      if (guardSettled) return;
+      let arrived = 0;
+      for (const el of revealEls){
+        const r = el.getBoundingClientRect();
+        if (r.bottom <= 0 || r.top >= window.innerHeight * 0.75) continue;
+        if (el.closest('.hero')) continue;              // exempt, always opaque
+        arrived++;
+        if (parseFloat(getComputedStyle(el).opacity) >= 0.01){
+          guardSettled = true;                          // the timeline is live
+          return;
+        }
+      }
+      if (!arrived) return;                             // nothing to judge yet
+      guardSettled = true;
+      document.documentElement.classList.add('reveal-fallback');
+      revealEls.forEach(el => el.classList.add('is-visible'));
+    };
+    setTimeout(guard, 1200);
+    onScroll(guard);
+  } else if (revealEls.length && 'IntersectionObserver' in window && !reduceMotion){
     const io = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting){
@@ -445,6 +506,14 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.id = 'pigment-field';
     canvas.setAttribute('aria-hidden', 'true');
     document.body.prepend(canvas);
+    /* Declares that an opaque painted field now covers the viewport. The
+       stylesheet uses this to drop the vellum wash underneath it on phones:
+       the field is opaque and a negative z-index child paints above its
+       parent's background, so that wash is rasterised across the whole
+       document and never once seen. It cannot be keyed off width alone —
+       under reduced motion this block never runs and the wash is all there
+       is to see. */
+    document.documentElement.classList.add('has-field');
 
     const veil = document.createElement('div');
     veil.className = 'field-veil';
