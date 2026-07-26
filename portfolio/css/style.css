@@ -1860,6 +1860,23 @@ html[data-theme='dark'] .page-leaf::before{
      it now exists only while the leaf is actually being turned. */
   .page-leaf{ visibility:hidden; }
   .page-leaf.is-covering{ visibility:visible; }
+
+  /* ---- The volume opens and turns at the speed of a hand ---------------
+     The script shortens the two waits the reader actually feels — the
+     opening, and the leaf before each chapter. The durations here are
+     compressed to match, so both still play out in full rather than being
+     cut off partway. Same choreography, same order, less waiting. */
+  .page-leaf{ transition-duration:.2s; }
+  .page-leaf .leaf-label{ transition:opacity .12s .04s, transform .12s .04s; }
+  #opening{ transition-duration:.42s; }
+  #opening .op-seal{
+    transition:opacity .3s var(--ease), transform .34s var(--ease);
+  }
+  #opening .op-title{
+    transition:opacity .3s .04s var(--ease), transform .3s .04s var(--ease);
+  }
+  #opening .op-sub{ transition:opacity .3s .12s var(--ease); }
+  #opening .op-rule{ transition:width .38s .06s var(--ease); }
 }
 /* the scrolled nav trades backdrop sampling for a settled solid tone */
 @media (max-width: 700px){

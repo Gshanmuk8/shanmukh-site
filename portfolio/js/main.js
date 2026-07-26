@@ -233,6 +233,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  /* ---- The next gathering, already on the desk -------------------------
+     After the leaf comes the other half of the wait: the network. The
+     whole volume is five small HTML files, and by the time a reader has
+     any link in front of them the stylesheet and the script are already
+     cached — so the remaining chapters cost almost nothing to fetch. Once
+     the browser is idle they are fetched, and a tap then turns to a page
+     that is already local. Hand-held only: this spends a little of a
+     phone's data to buy back the pause the reader actually feels. */
+  if (handHeld){
+    /* An idle callback with no deadline never runs while the page is
+       hidden — open the volume in a background tab and the prefetch would
+       simply never happen. The deadline makes it yield to the critical
+       path without ever being dropped. */
+    const idle = window.requestIdleCallback
+      ? fn => window.requestIdleCallback(fn, { timeout: 2500 })
+      : fn => setTimeout(fn, 1500);
+    idle(() => {
+      const l = document.createElement('link');
+      const canPrefetch = l.relList && l.relList.supports && l.relList.supports('prefetch');
+      ['index.html', 'about.html', 'projects.html', 'blog.html', 'contact.html']
+        .forEach(p => {
+          if (p === path) return;
+          if (canPrefetch){
+            const tag = document.createElement('link');
+            tag.rel = 'prefetch';
+            tag.href = p;
+            document.head.appendChild(tag);
+          } else {
+            /* Safari has no prefetch; a plain read warms the same cache */
+            fetch(p, { credentials: 'same-origin' }).catch(() => {});
+          }
+        });
+    });
+  }
+
   /* ---- Turning the leaf — a sheet is drawn over the page between chapters ---- */
   const leaf = document.createElement('div');
   leaf.className = 'page-leaf';
@@ -256,7 +291,13 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         leafLabel.textContent = chapterOf[href.split('/').pop()] || 'Turning…';
         leaf.classList.add('is-covering');
-        setTimeout(() => { location.href = href; }, 430);
+        /* The leaf is a held breath before the next chapter. On a desk it
+           is ceremony; in the hand it is the whole of the wait between a
+           tap and a response, and it reads as the site being slow. The
+           phone turns the leaf in a little over a third of the time —
+           the stylesheet shortens the sweep to match, so the turn still
+           completes rather than being cut off mid-sheet. */
+        setTimeout(() => { location.href = href; }, handHeld ? 190 : 430);
       });
     });
   }
@@ -347,10 +388,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(ov);
     document.documentElement.classList.add('is-opening');
     requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('is-ready')));
+    /* The opening of the volume holds the page for a second and a half and
+       locks scrolling while it does. On a desk that is the ceremony of a
+       book being opened; on a phone it is the first thing the reader meets
+       and it reads as the site being slow to arrive. The hand-held edition
+       performs the same opening at speed — the stylesheet compresses the
+       seal, title and rule to match, so nothing is cut off. */
     setTimeout(() => {
       ov.classList.add('is-lifting');
       document.documentElement.classList.remove('is-opening');
-    }, 1500);
+    }, handHeld ? 700 : 1500);
     ov.addEventListener('transitionend', e => {
       if (e.propertyName === 'transform' && ov.classList.contains('is-lifting')) ov.remove();
     });
@@ -670,6 +717,35 @@ document.addEventListener('DOMContentLoaded', () => {
       zoomed = magnified();
       document.documentElement.classList.toggle('is-magnified', offScale());
     }
+
+    /* ---- The painting settles -------------------------------------------
+       A full-screen layer whose pixels keep changing is work the phone
+       never stops doing: a texture upload every painted frame, a GPU kept
+       warm, and a battery and thermal budget spent on paint drifting
+       behind text that is being read. Left running it eventually throttles
+       the very scrolling it was tuned around.
+
+       So in the hand the painting behaves like paint. It is wet when the
+       reader arrives and for a while after they touch the volume, and then
+       it dries: the loop parks completely and the field holds the frame it
+       reached. Any scroll or touch wets it again. The reader always meets
+       a living painting and never pays for one they have stopped
+       watching. The desk edition paints without pause, as before. */
+    let resting = false, settleTimer = 0;
+    const REST_AFTER = 6000;
+    if (handHeld){
+      const dry = () => { resting = true; };
+      const wet = () => {
+        resting = false;
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(dry, REST_AFTER);
+        pump();                       // parked frames revive here
+      };
+      scrollNow.push(wet);
+      window.addEventListener('pointerdown', wet, { passive: true });
+      window.addEventListener('touchstart', wet, { passive: true });
+      settleTimer = setTimeout(dry, REST_AFTER);
+    }
     /* the impasto threshold: raking light only ever showed on a loaded
        brush, so on the phone only the broadest strokes carry the three
        passes and the rest are laid in one — the relief the eye actually
@@ -679,8 +755,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const frame = ts => {
       scheduled = false;
       if (!running) return;
-      /* parked: settle() is what brings the brush back */
-      if (vvHold || zoomed) return;
+      /* parked: settle() and wet() are what bring the brush back */
+      if (vvHold || zoomed || resting) return;
       if (coarsePointer){
         /* A full-screen canvas costs the phone far more in the compositor
            than in this loop: every frame whose pixels change re-uploads the
