@@ -351,13 +351,24 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.id = 'pigment-field';
     canvas.setAttribute('aria-hidden', 'true');
     document.body.prepend(canvas);
+    /* declares that an opaque painted field covers the viewport, so the
+       stylesheet can drop the vellum wash hidden beneath it on phones;
+       keyed to the field itself because under reduced motion this block
+       never runs and the wash is then all there is to see */
+    document.documentElement.classList.add('has-field');
 
     const veil = document.createElement('div');
     veil.className = 'field-veil';
     veil.setAttribute('aria-hidden', 'true');
     document.body.prepend(veil);
 
-    const ctx = canvas.getContext('2d');
+    /* On phones the context declares itself opaque. The ground is laid
+       across the whole sheet in the same script task, before any paint can
+       happen — and a known-opaque full-screen layer lets the compositor
+       both skip per-pixel blending and cull the body background hidden
+       behind it, instead of rasterising gradients nobody will ever see. */
+    const ctx = canvas.getContext('2d',
+      (coarsePointer || window.innerWidth < 700) ? { alpha: false } : undefined);
 
     // The pigment cabinet, in both lights: the same pigments by day, and
     // their luminous selves under lamplight — never a mere inversion.

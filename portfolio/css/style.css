@@ -1852,6 +1852,18 @@ html[data-theme='dark'] .page-leaf::before{
      fill-rate bound first; the leaf now exists only while it is turning. */
   .page-leaf{ visibility:hidden; }
   .page-leaf.is-covering{ visibility:visible; }
+
+  /* THE GROUND NOBODY SEES. The body's vellum wash is eight radial
+     gradients, and with the fixed attachment traded away for phones they
+     resolve against the whole document — two of them, sized at 130% of it,
+     are anchored below the page's foot (96% 112% and -8% 108%), so the
+     bottom screens of every page rasterise several giant gradients at
+     their most intense point. And none of it is ever visible: the painted
+     field covers the viewport with opaque paint, verified pixel-by-pixel.
+     Where the field exists, the wash goes; the paper colour beneath it
+     stays, so even a failed canvas shows celadon, never black. */
+  html.has-field body,
+  html.has-field[data-theme='dark'] body{ background-image:none; }
 }
 
 /* ---- One layer per pixel ------------------------------------------------
