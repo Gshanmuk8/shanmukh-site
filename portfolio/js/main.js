@@ -751,13 +751,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let scrolling = false, scrollSettle = 0;
     if (coarsePointer){
       scrollNow.push(() => {
+        /* once the paint has dried for good, a scroll owes it nothing —
+           not even this pair of timer calls */
+        if (resting) return;
         scrolling = true;
         clearTimeout(scrollSettle);
         /* Reading is not one long scroll — it is a flick, a pause, a flick.
            Waking the brush 140ms into every pause meant a full-screen texture
            upload starting at precisely the moment the thumb was most likely
            to move again, so the gesture that followed had to fight the paint
-           it had just permitted. The brush now waits for a real pause. */
+           it had just permitted. The brush waits for a real pause. */
         scrollSettle = setTimeout(() => { scrolling = false; }, 900);
       });
     }
@@ -818,33 +821,39 @@ document.addEventListener('DOMContentLoaded', () => {
       document.documentElement.classList.toggle('is-magnified', offScale());
     }
 
-    /* ---- The painting settles -------------------------------------------
+    /* ---- The painting dries ---------------------------------------------
        A full-screen layer whose pixels keep changing is work the phone
        never stops doing: a texture upload every painted frame, a GPU kept
-       warm, and a battery and thermal budget spent on paint drifting
-       behind text that is being read. Left running it eventually throttles
-       the very scrolling it was tuned around.
+       warm, and a thermal budget spent on paint drifting behind text that
+       is being read — which eventually throttles the very scrolling it was
+       tuned around.
 
-       So in the hand the painting behaves like paint. It is wet when the
-       reader arrives and for a while after they touch the volume, and then
-       it dries: the loop parks completely and the field holds the frame it
-       reached. Any scroll or touch wets it again. The reader always meets
-       a living painting and never pays for one they have stopped
-       watching. The desk edition paints without pause, as before. */
+       The last edition re-wet the paint on every scroll and touch, six
+       seconds at a time. But reading is a flick, a pause, a flick: under
+       that rule the painting was wet through nearly the whole visit, and
+       every pause bought a texture upload just as the thumb came back.
+       Alive when met, still while read — re-wetting on touch honoured the
+       first half and broke the second.
+
+       Now the paint behaves like paint. It is wet when the reader arrives,
+       long enough to watch it settle; then it dries, completely and for
+       good — the loop parks, the frame it reached becomes the ground the
+       whole visit rests on, and no rAF chain so much as idles behind the
+       scroll. Only a change of light re-inks the sheet: the eclipse repaints
+       the ground in the other cabinet, and the brush works just long enough
+       to lay strokes into it before drying again. The desk edition paints
+       without pause, as before. */
     let resting = false, settleTimer = 0;
-    const REST_AFTER = 6000;
     if (handHeld){
       const dry = () => { resting = true; };
-      const wet = () => {
+      const wet = ms => {
         resting = false;
         clearTimeout(settleTimer);
-        settleTimer = setTimeout(dry, REST_AFTER);
+        settleTimer = setTimeout(dry, ms);
         pump();                       // parked frames revive here
       };
-      scrollNow.push(wet);
-      window.addEventListener('pointerdown', wet, { passive: true });
-      window.addEventListener('touchstart', wet, { passive: true });
-      settleTimer = setTimeout(dry, REST_AFTER);
+      wet(6000);                                              // alive when met
+      window.addEventListener('sk-theme', () => wet(4000));   // re-inked by the eclipse
     }
     /* the impasto threshold: raking light only ever showed on a loaded
        brush, so on the phone only the broadest strokes carry the three
