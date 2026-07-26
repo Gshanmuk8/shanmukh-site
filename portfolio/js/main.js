@@ -713,7 +713,13 @@ document.addEventListener('DOMContentLoaded', () => {
       canon.appendChild(p);
     });
     hero.appendChild(canon);
-    if (reduceMotion){
+    /* The ruling draws itself across the full height of the hero — the home
+       page only — and stroke-dashoffset cannot be composited, so those first
+       seconds repaint the whole viewport on every frame, precisely when the
+       reader first scrolls. On phones the scribe has already ruled the
+       sheet: it opens in its resting state, which is what the page settles
+       to regardless. */
+    if (reduceMotion || coarsePointer || window.innerWidth < 700){
       canon.classList.add('is-drawn', 'is-resting');
     } else {
       requestAnimationFrame(() => requestAnimationFrame(() => {
