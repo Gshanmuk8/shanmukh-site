@@ -2057,3 +2057,40 @@ html[data-theme='dark'] .page-leaf::before{
      The desk keeps the full engraving. */
   .press-stamp .stamp-ring{ display:none; }
 }
+
+/* =========================================================================
+   THE FOOTER'S OWN TEXTURES — hand-held edition
+   The plate and the deep section had their ::before textures retired
+   earlier this session, alongside their gradient backgrounds — but the
+   footer's two full-area overlays were missed, on every page, because
+   "flatten the painted panels" only touched .site-footer's own background.
+
+   ::before is a turbulence texture through mix-blend-mode:screen, exactly
+   the compositing cost already removed from the plate and the deep
+   section. ::after is heavier still: not noise but a feDisplacementMap
+   marbling pattern, also blended. Two full-area filtered, blended layers,
+   stacked on one element, on every single page — sitting at precisely the
+   spot reported again and again as the place that still sticks.
+
+   Both retire on phones. The desk edition keeps both textures.
+   ========================================================================= */
+@media (max-width: 700px){
+  .site-footer::before,
+  .site-footer::after{ display:none; }
+}
+
+/* =========================================================================
+   THE GRAIN RE-BLENDED BY NIGHT — hand-held edition
+   The 700px block gives phones a plain-opacity grain layer instead of a
+   blended one (mix-blend-mode is a per-frame compositing cost on a
+   full-screen fixed layer). But `html[data-theme='dark'] body::before`
+   sits later in the sheet, at equal specificity, and reinstates
+   mix-blend-mode:screen on that same layer for night reading — undoing the
+   phone fix precisely for readers in dark mode, on every scrolled frame,
+   on every page. Same bug shape as the nav backdrop-filter found earlier
+   this session: a later rule of equal weight silently winning back a cost
+   the phone block had already paid down.
+   ========================================================================= */
+@media (max-width: 700px){
+  html[data-theme='dark'] body::before{ mix-blend-mode:normal; opacity:.045; }
+}
