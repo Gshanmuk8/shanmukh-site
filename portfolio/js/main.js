@@ -54,8 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ---- Sections settle in as they enter the viewport ---- */
+  /* On the phone the page is simply present: the stylesheet has already
+     made every reveal inert with !important, so observing three dozen
+     elements to add a class that changes nothing is pure cost. The class
+     is set once, the observer never built, and no stagger delays are
+     written. The desk keeps the full choreography. */
+  const stillPage = matchMedia('(pointer: coarse)').matches || window.innerWidth < 700;
   const revealEls = document.querySelectorAll('[data-reveal]');
-  if (revealEls.length && 'IntersectionObserver' in window && !reduceMotion){
+  if (revealEls.length && 'IntersectionObserver' in window && !reduceMotion && !stillPage){
     const io = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting){
@@ -191,13 +197,15 @@ document.addEventListener('DOMContentLoaded', () => {
         '</svg>' +
       '</a></div>';
     siteFooter.insertAdjacentElement('beforebegin', row);
-    if ('IntersectionObserver' in window){
+    /* on the phone the catchword is simply on the page, like everything
+       else — its swash is pre-drawn by the stylesheet */
+    if (stillPage || !('IntersectionObserver' in window)){
+      row.classList.add('is-shown');
+    } else {
       const cio = new IntersectionObserver(es => {
         es.forEach(en => { if (en.isIntersecting){ row.classList.add('is-shown'); cio.disconnect(); } });
       }, { threshold: 0.4 });
       cio.observe(row);
-    } else {
-      row.classList.add('is-shown');
     }
   }
 

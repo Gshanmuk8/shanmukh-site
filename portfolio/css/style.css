@@ -2009,3 +2009,26 @@ html[data-theme='dark'] .page-leaf::before{
   /* obsidian polish: keep the hairline of caught light, shed the 90px pooled blur */
   html[data-theme='dark'] .plate{ box-shadow:inset 0 1px 0 rgba(214,226,245,.06); }
 }
+
+/* =========================================================================
+   THE PAGE IS SIMPLY PRESENT — hand-held edition
+   The last stutter lived at the foot of every page: the catchword, the
+   closing plate and the footer are the final cluster of entrance fades,
+   and every block that fades is promoted to its own GPU texture,
+   rasterised, uploaded, faded and dropped — a burst of one-time GPU work
+   exactly where the reader arrives pressed against the scroll limit. A
+   real book's page does not fade in. On the phone the volume is simply
+   there, and — written with !important, in CSS alone — nothing on the
+   page can ever be left hidden by any script under any failure. The desk
+   edition keeps its choreographed reveals untouched.
+   ========================================================================= */
+@media (max-width: 700px){
+  [data-reveal]{
+    opacity:1 !important;
+    transform:none !important;
+    filter:none !important;
+    transition:none !important;
+  }
+  .catchword{ opacity:1 !important; transform:none !important; transition:none !important; }
+  .catchword svg path{ stroke-dashoffset:0 !important; transition:none !important; }
+}
