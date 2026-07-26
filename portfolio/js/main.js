@@ -107,10 +107,25 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('scroll', () => {
     if (!ribbonTick){ requestAnimationFrame(setRibbon); ribbonTick = true; }
   }, { passive: true });
-  window.addEventListener('resize', () => { measureRibbon(); setRibbon(); });
+  /* Reaching the foot of the page brings the phone's URL bar back, and its
+     entrance fires a burst of resize events — a dozen or more across one
+     short animation. Answering each with a fresh scrollHeight read is a
+     forced full-document layout per event, all landing exactly where the
+     reader reported the sticking. The burst now collapses to one measure
+     per frame. */
+  let remeasureQueued = false;
+  const remeasure = () => {
+    if (remeasureQueued) return;
+    remeasureQueued = true;
+    requestAnimationFrame(() => {
+      remeasureQueued = false;
+      measureRibbon();
+      setRibbon();
+    });
+  };
+  window.addEventListener('resize', remeasure);
   if ('ResizeObserver' in window){
-    new ResizeObserver(() => { measureRibbon(); setRibbon(); })
-      .observe(document.documentElement);
+    new ResizeObserver(remeasure).observe(document.documentElement);
   }
 
   /* ---- Exhibit placard — names the section currently under glass ---- */
