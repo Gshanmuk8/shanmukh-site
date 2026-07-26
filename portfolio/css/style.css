@@ -1979,3 +1979,27 @@ html[data-theme='dark'] .page-leaf::before{
   .catchword:active em{ color:var(--lapis-ink); }
   .btn:active{ transform:translateY(1px) scale(.99); }
 }
+
+/* =========================================================================
+   THE FLAT-TONED PANELS — hand-held edition
+   The reader's lag report mapped exactly onto the painted panels: one plate
+   and the footer at the foot of every chapter — "the bottom of every page"
+   — and the home page carrying plate, deep section and closing plate
+   through its whole length. Each panel stacks four to six large radial
+   gradients over its ground, and lays a turbulence-filter texture over
+   that through a blend mode, which makes the GPU compose the panel
+   offscreen and read it back for every strip of pixels a scroll exposes.
+   On the phone each panel keeps its ground — at this size the linear base
+   is the look — and sheds the edge blooms, the grain, and the blended
+   pass. The desk edition keeps the full painted treatment untouched.
+   ========================================================================= */
+@media (max-width: 700px){
+  .plate{ background:linear-gradient(160deg, #12264A 0%, #1E4488 50%, #0F1E3E 100%); }
+  .plate::before{ display:none; }            /* marbling + its screen blend */
+  .section--deep{ background:linear-gradient(160deg, #C6E1D7, #B7D5CA); }
+  .section--deep::before{ display:none; }    /* fresco turbulence */
+  .site-footer{ background:linear-gradient(160deg, var(--night), var(--bistre)); }
+  html[data-theme='dark'] .section--deep{ background:linear-gradient(160deg, #101E24, #0C161C); }
+  /* obsidian polish: keep the hairline of caught light, shed the 90px pooled blur */
+  html[data-theme='dark'] .plate{ box-shadow:inset 0 1px 0 rgba(214,226,245,.06); }
+}
