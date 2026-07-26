@@ -682,7 +682,14 @@ document.addEventListener('DOMContentLoaded', () => {
       /* parked: settle() is what brings the brush back */
       if (vvHold || zoomed) return;
       if (coarsePointer){
-        if (scrolling || (beat++ & 1)){ pump(); return; }
+        /* A full-screen canvas costs the phone far more in the compositor
+           than in this loop: every frame whose pixels change re-uploads the
+           whole sheet as a texture, and that never shows up in a profile of
+           the drawing. The strokes themselves measure in tenths of a
+           millisecond, so the saving worth having is simply painting less
+           often. The phone takes one frame in four for a current that
+           drifts this slowly. */
+        if (scrolling || (beat++ & 3)){ pump(); return; }
       }
       shift += (targetShift - shift) * 0.04;
       ctx.globalCompositeOperation = 'source-over';
@@ -690,7 +697,10 @@ document.addEventListener('DOMContentLoaded', () => {
          flatness. Blitting the ground is the single costliest op of the
          frame, so it runs every second painted frame at doubled strength
          — the same fade rate for half the compositing work. */
-      if ((tick++ & 1) === 0){
+      if (coarsePointer || (tick++ & 1) === 0){
+        /* The desk blits every second painted frame; the phone now paints
+           half as often, so it blits every painted frame — the same number
+           of blits a second, and therefore exactly the same rate of fade. */
         ctx.globalAlpha = coarsePointer ? 0.07 : 0.038;
         ctx.drawImage(ground, 0, 0, W, H);
         ctx.globalAlpha = 1;

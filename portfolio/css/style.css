@@ -1852,6 +1852,14 @@ html[data-theme='dark'] .page-leaf::before{
   /* the ribbon's growth is confined to itself, so the phone never widens
      the reflow beyond an 8px strip */
   .bookmark-ribbon{ contain:strict; }
+  /* The turning leaf is a full-screen sheet carrying a radial gradient and
+     a 60px blurred shadow. Parked off the bottom by a transform it is
+     still a live composited layer — rasterised and held in GPU memory for
+     the whole visit, on every page — to serve an animation that lasts
+     460ms. Phones are fill-rate bound before they are anything else, so
+     it now exists only while the leaf is actually being turned. */
+  .page-leaf{ visibility:hidden; }
+  .page-leaf.is-covering{ visibility:visible; }
 }
 /* the scrolled nav trades backdrop sampling for a settled solid tone */
 @media (max-width: 700px){
